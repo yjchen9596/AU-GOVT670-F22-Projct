@@ -1,0 +1,208 @@
+%%Here's your first LaTeX document.  There will be many more.
+%%Check out the online ``Not-so-Short Guide to LaTeX''
+%%The header includes a bit of critical information:
+%%documentclass: article, book, etc.
+%%[the font size]
+\documentclass[12pt]{article}
+%%The header also loads packages you might want.  
+%%Of those below, you will probably want to use ``natbib''.  
+%%Others are optional.
+% === graphic packages ===
+%\usepackage{epsf,graphicx,psfrag}
+\usepackage{graphicx}
+\usepackage{lscape}
+% === bibliography package ===
+\usepackage{natbib}
+% === margin and formatting ===
+\usepackage[top=1in, bottom=1in, right=1in, left=1in]{geometry}
+\usepackage{setspace}
+%\usepackage{vmargin}
+%\setpapersize{USletter}
+% === math packages ===
+\usepackage[reqno]{amsmath}
+\usepackage{amssymb}
+% === dcolumn package ===
+\usepackage{dcolumn}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+% === additional packages ===
+\usepackage{url}
+% === definitions ===
+\newcommand{\bibtex}{\textsc{Bib\TeX}}
+
+% === title, author, etc. ===
+\title{%
+  GOVT670 Project Plan\\
+  \large Car Crash Accident in DC}
+\author{Yuka Chen and Concillia Mpofu}
+\date {Oct 3, 2022}
+
+\begin{document}
+
+\maketitle
+% === abstract ===
+\begin{abstract}
+
+\end{abstract}
+% === spacing ===
+\doublespacing
+\tableofcontents
+\clearpage
+%=== text starts here ===
+
+%===INTRO===
+\section*{Short Summary of Project Plan}
+\label{sec:intro}
+
+We are planning to combine multiple dataset to see if there are any factor causes the car crash in the DC areas. We will include, road condition, traffic lights, speed camera, income, etc in to our data set. 
+
+% === DATASET ===
+\section{Datasets}
+\label{sec:data}
+
+\begin{singlespacing}
+\begin{itemize}
+\item https://opendata.dc.gov/datasets/DCGIS::street-lights/about
+\item https://opendata.dc.gov/datasets/DCGIS::crash-details-table/explore
+\item https://opendata.dc.gov/datasets/DCGIS::crashes-in-dc/explore?location=38.893706%2C-77.019147%2C12.34&showTable=true
+\item https://opendata.dc.gov/datasets/acs-economic-characteristics-dc-ward/explore?location=38.940965%2C-76.938369%2C22.53&showTable=true
+\item https://opendata.dc.gov/datasets/DCGIS::wards-from-2022/explore?location=38.893755%2C-77.014450%2C12.50&showTable=true
+\item https://opendata.dc.gov/datasets/economic-acs-characteristics-2011-to-2015/explore
+\end{itemize}
+\end{singlespacing}
+% ====notes from meeting ===
+\section{Points From Meeting with Professor}
+\label{sec:notes}
+
+
+\begin{singlespacing}
+\begin{itemize}
+\item Particular cars
+\item Zip code level -80 level for income
+\item Censes block level - 400 level for income
+\item Infrustracure data, plan structures
+\item Plan road closure - what road is close or going to close. Doc dc transportation 
+\item Traffic violation - tickets, flags whether is the police or automated intervention (camera) 
+\item RA funded through de doc - she can find info or data for us - LAB
+\item MAR Geocoder - jut for DC - provide different type of the location - it will tell you the location info you need - its an software 
+
+\end{itemize}
+\end{singlespacing}
+
+%===citation===
+\section{References}
+\label{sec:Ref}
+
+\maketitle
+ \ Testing123 \cite{HAYAKAWA2000827}
+
+\bibliographystyle{References}
+\bibliography{References}
+
+
+\subsection{Some Stuff}
+\label{sub:some}
+
+Here's some background matter.
+
+\subsection{More Stuff}
+Remember back in Section \ref{sub:some}?  It was the first subsection in Section \ref{sec:back}, right?  Wasn't it great?
+
+\section{Tables}
+
+Just below here, you are going to see a great table (actually, it's a little heavy on column- and row-demarcating lines).  It's Table \ref{table:t1}.
+
+\bigskip
+
+\begin{table}[h!]
+\footnotesize
+\begin{center}
+\begin{tabular}{|l||c|r|} \hline
+Col1 & Col2 	& Col3 \\ \hline
+Mean & 5	& 10	\\
+StanDev &  2	& 3 \\ \hline
+\end{tabular}
+\end{center}
+\caption{A Great Table with Numbers and Letters}
+\label{table:t1}
+\end{table}
+
+\clearpage
+
+\section{Other Formats}
+
+Here's an equation array, numbered.
+\begin{eqnarray}
+Y & = & \beta_0 + \beta_1 A + \beta_2 B + \beta_3 C \\
+& \approx & 5 
+\end{eqnarray}
+
+Here's an itemization:
+\begin{singlespacing}
+\begin{itemize}
+\item A is important.
+\item B is too.
+\end{itemize}
+\end{singlespacing}
+
+Here's a numbered list:
+
+\begin{singlespacing}
+\begin{enumerate}
+\item First item.
+\item You get the picture.
+\end{enumerate}
+\end{singlespacing}
+
+Here's math in a sentence:  It's nice outside; let's go throw around the $\epsilon$-ball.  Here's math set off:
+
+\begin{displaymath}
+\prod_{i=1}^{22} x_i
+\end{displaymath}
+
+\section{Some Reference Commands}
+
+\bibtex~ is great.  One of my favorite books is \cite{gill:06}.  He writes, ``A standard, though somewhat maligned, theory \ldots'' \citep[p.24]{gill:06}.  The book was published in \citeyear{gill:06}.  An article by the same author appears in \cite{gill:08}.  
+
+Sample code for how to create {\tt .pdf} and {\tt .eps} graphics in R and include them in a \LaTeX~ document, as well as how to include R code in \LaTeX~ document has been commented out below.  See the source {\tt sample.tex} for details.
+
+%%Template for including .PDF graphics
+%%First, here's the R command sequence:
+%%pdf("myplot.pdf")
+%%plot(x,y)           ##or some other graphing command
+%%dev.off()
+%%Second, here's the LaTeX code for including the graphic:
+%%\begin{figure}[h] 
+%%	\centering
+%%	\includegraphics{myplot.pdf}
+%%	\caption{}
+%%	\label{f1}   
+%%\end{figure}
+
+%%Template for including .EPS figures
+%%First, the R command sequence:
+%%postscript("myplot.eps")
+%%plot(x,y)		##or some other graphing command
+%%dev.off()
+%%Second, the LaTeX code for including the graphic:
+%%\begin{figure}[h!]
+%%\begin{center}
+%%\includegraphics[width=1\textwidth]{myplot}
+%%\end{center}
+%%\caption{}
+%%\label{f1}
+%%\end{figure}
+
+%%Template for including R code
+%%\begin{singlespacing}
+%%\begin{verbatim}
+%%> mean(florida$BUCHANAN)
+%%[1] 258.46268657
+%%\end{verbatim}
+%%\end{singlespacing}
+
+\singlespacing 
+\bibliographystyle{apsr}
+\bibliography{samp}
+
+\end{document}
