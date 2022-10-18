@@ -1,0 +1,8 @@
+\contentsline {section}{\numberline {1}Datasets}{2}{}%
+\contentsline {section}{\numberline {2}Points From Meeting with Professor}{2}{}%
+\contentsline {section}{\numberline {3}References}{3}{}%
+\contentsline {subsection}{\numberline {3.1}Some Stuff}{3}{}%
+\contentsline {subsection}{\numberline {3.2}More Stuff}{3}{}%
+\contentsline {section}{\numberline {4}Tables}{3}{}%
+\contentsline {section}{\numberline {5}Other Formats}{4}{}%
+\contentsline {section}{\numberline {6}Some Reference Commands}{4}{}%
