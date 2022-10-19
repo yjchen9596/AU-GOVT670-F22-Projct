@@ -20,11 +20,11 @@ knitr::opts_chunk$set(tidy = FALSE, tidy.opts = list(width.cutoff = 60))
 ```
 
 # Short Summary of Project Plan
-We are planning to combine multiple dataset to see if there are any factor causes the car crash in the DC areas. We will include, road condition, traffic lights, speed camera, income, etc in to our data set.
+Recently DC announced that they will be be increasing the traffic fines for offences captured by the Traffic Cameras. Previous reports dating back from 2005 showed that the DC Red light cameras were not effective in reducing car crashes. In this study we will focus on data beyond 2005 and see if the situation has changed) In this project we want to conduct a study to review the the ability of these Red light cameras reduce accidents. There are various factors that we will consider, these include road conditions, traffic lights, speed camera, income, etc in to our data set. We are going to combine various DC data sets to enable us to conduct this data analysis.
 
 # Research Questions:
 
-1. Do DC Red light cameras reduce accidents? Based on a report from 2005 they didn't. 
+1. Do DC Red light cameras reduce accidents? 
 2. What is the most significant factor in car crashes around DC?
 
 # Datasets
