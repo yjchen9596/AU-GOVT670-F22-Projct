@@ -2,25 +2,117 @@
 title: "GOVT670 Project Plan"
 author: "Yuka Chen and Concillia Mpofu"
 date: "`r Sys.Date()`"
-output: html_document
-bibliography: References-YukaC-ConcilliaM.bib
-link-citations: true
+output:
+  pdf_document:
+    number_sections: true
+  html_document:
+    number_sections: yes
+bibliography: "References-YukaC-ConcilliaM.bib"
+link-citations: yes
 nocite: '@*'
 ---
+
+
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(tidy = FALSE, tidy.opts = list(width.cutoff = 60))
+```
 
 # Short Summary of Project Plan
 We are planning to combine multiple dataset to see if there are any factor causes the car crash in the DC areas. We will include, road condition, traffic lights, speed camera, income, etc in to our data set.
 
-# 1. Datasets
+# Research Questions:
 
-- https://opendata.dc.gov/datasets/DCGIS::street-lights/about 
-- https://opendata.dc.gov/datasets/DCGIS::crash-details-table/explore
-- https://opendata.dc.gov/datasets/DCGIS::crashes-in-dc/explore?location=38.893706 
-- https://opendata.dc.gov/datasets/acs-economic-characteristics-dc-ward/explore?location=38.940965 
-- https://opendata.dc.gov/datasets/DCGIS::wards-from-2022/explore?location=38.893755 
-- https://opendata.dc.gov/datasets/economic-acs-characteristics-2011-to-2015/explore
+1. Do DC Red light cameras reduce accidents? Based on a report from 2005 they didn't. 
+2. What is the most significant factor in car crashes around DC?
 
-# 2. Points From Meeting with Professor
+# Datasets
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+- [Street Light](https://opendata.dc.gov/datasets/DCGIS::street-lights/about)
+- [Car Crash](https://opendata.dc.gov/datasets/DCGIS::crash-details-table/explore)
+- [Crashes in DC](https://opendata.dc.gov/datasets/DCGIS::crashes-in-dc/explore?location=38.893706)
+- [Some Info by DC Ward](https://opendata.dc.gov/datasets/acs-economic-characteristics-dc-ward/explore?location=38.940965)
+- [Wards from 2022](https://opendata.dc.gov/datasets/DCGIS::wards-from-2022/explore?location=38.893755)
+- [Economic ACS Characteristics 2011-2015](https://opendata.dc.gov/datasets/economic-acs-characteristics-2011-to-2015/explore)
+- [Traffic Camera in DC](https://opendata.dc.gov/datasets/traffic-camera/about)
+- [Moving Violations Issued in May 2018](https://opendata.dc.gov/datasets/87a2d2f6a8124b1e9d7406185d8fec80/explore)
+- [pavement marking](https://opendata.dc.gov/datasets/DCGIS::pavement-marking/explore?location=38.892509%2C-77.020630%2C12.66)
+- [Traffic Pole](https://opendata.dc.gov/datasets/DCGIS::traffic-pole/explore?location=38.892509%2C-77.020630%2C12.66)
+- [Traffic Signal Cabinets](https://opendata.dc.gov/datasets/DCGIS::traffic-signal-cabinets/explore?location=38.892509%2C-77.020630%2C12.66)
+- [Traffic Monitoring Stations](https://opendata.dc.gov/datasets/DCGIS::traffic-monitoring-stations/explore?location=38.892509%2C-77.020630%2C12.66)
+
+We downloaded the data and stored it on Github so we can save our local device storage. 
+
+```{r}
+urlRemote  <- "https://media.githubusercontent.com/media/"
+pathGithub <- "yjchen9596/data/main/GOVT670/"
+```
+
+```{r}
+economic_dc_ward <- 
+  paste0(urlRemote, 
+         pathGithub, 
+         "ACS_Economic_Characteristics_DC_Ward.csv?token=AV2SENGE2ICD5C3XQY66Q4LDJ5LUK") |> 
+    read_csv()
+```
+
+
+```{r}
+car_crash_details <-  paste0(urlRemote, 
+                             pathGithub, 
+                             "Crash_Details_Table.csv?token=AV2SENAFX26OBEA4Z42OO5TDJ5LW4") |> 
+    read_csv()
+```
+
+```{r}
+car_crash <- paste0(urlRemote,
+                    pathGithub,
+                    "Crashes_in_DC.csv?token=AV2SENGUZGF5DNDBNBVRHBTDJ5LYY") |> 
+    read_csv()
+```
+
+```{r}
+pavement_making <- paste0(urlRemote,
+                    pathGithub,
+                    "Pavement_Marking.csv?token=AV2SENB7KYFRFUG7XVJA6S3DJ5L2O") |> 
+    read_csv()
+```
+
+```{r}
+street_lights <- paste0(urlRemote,
+                    pathGithub,
+                    "Street_Lights.csv?token=AV2SENFNUD4NP2L7HWQFLBTDJ5L4MY") |> 
+    read_csv()
+```
+
+```{r}
+traffic_camera <- paste0(urlRemote,
+                    pathGithub,
+                    "Traffic_Camera.csv?token=AV2SENBNCJP2SJEMOPRAAILDJ5L5W") |> 
+    read_csv()
+```
+
+```{r}
+traffic_monitor_location <- paste0(urlRemote,
+                    pathGithub,
+                    "Traffic_Monitoring_Stations.csv?token=AV2SENBCOCRH2KGTFSBH373DJ5L7O") |> 
+    read_csv()
+```
+
+```{r}
+traffic_signal_cabinet <- paste0(urlRemote,
+                    pathGithub,
+                    "Traffic_Signal_Cabinets.csv?token=AV2SENFJ7LBWXCUNM3WYZ53DJ5MA6") |> 
+    read_csv()
+```
+
+
+# Points From Meeting with Professor
 
 - Particular cars
 - Zip code level -80 level for income
@@ -30,6 +122,7 @@ We are planning to combine multiple dataset to see if there are any factor cause
 - Traffic violation - tickets, flags whether is the police or automated intervention (camera)
 - RA funded through de doc - she can find info or data for us - LAB
 - MAR Geocoder - jut for DC - provide different type of the location - it will tell you the location info you need - its an software
+
 
 # References
 
