@@ -50,14 +50,16 @@ We downloaded the data and stored it on Github so we can save our local device s
 
 ```{r}
 urlRemote  <- "https://media.githubusercontent.com/media/"
-pathGithub <- "yjchen9596/data/main/GOVT670/"
+pathGithub <- "yjchen9596/data/main/GOVT670/" 
+
+##https://github.com/yjchen9596/data/tree/main/GOVT670 ## path to where I store the data
 ```
 
 ```{r}
 economic_dc_ward <- 
-  paste0(urlRemote, 
+  paste0(urlRemote,
          pathGithub, 
-         "ACS_Economic_Characteristics_DC_Ward.csv?token=AV2SENGE2ICD5C3XQY66Q4LDJ5LUK") |> 
+         "ACS_Economic_Characteristics_DC_Ward.csv") |> 
     read_csv()
 ```
 
@@ -65,49 +67,49 @@ economic_dc_ward <-
 ```{r}
 car_crash_details <-  paste0(urlRemote, 
                              pathGithub, 
-                             "Crash_Details_Table.csv?token=AV2SENAFX26OBEA4Z42OO5TDJ5LW4") |> 
+                             "Crash_Details_Table.csv") |> 
     read_csv()
 ```
 
 ```{r}
 car_crash <- paste0(urlRemote,
                     pathGithub,
-                    "Crashes_in_DC.csv?token=AV2SENGUZGF5DNDBNBVRHBTDJ5LYY") |> 
+                    "Crashes_in_DC.csv") |> 
     read_csv()
 ```
 
 ```{r}
 pavement_making <- paste0(urlRemote,
                     pathGithub,
-                    "Pavement_Marking.csv?token=AV2SENB7KYFRFUG7XVJA6S3DJ5L2O") |> 
+                    "Pavement_Marking.csv") |> 
     read_csv()
 ```
 
 ```{r}
 street_lights <- paste0(urlRemote,
                     pathGithub,
-                    "Street_Lights.csv?token=AV2SENFNUD4NP2L7HWQFLBTDJ5L4MY") |> 
+                    "Street_Lights.csv") |> 
     read_csv()
 ```
 
 ```{r}
 traffic_camera <- paste0(urlRemote,
                     pathGithub,
-                    "Traffic_Camera.csv?token=AV2SENBNCJP2SJEMOPRAAILDJ5L5W") |> 
+                    "Traffic_Camera.csv") |> 
     read_csv()
 ```
 
 ```{r}
 traffic_monitor_location <- paste0(urlRemote,
                     pathGithub,
-                    "Traffic_Monitoring_Stations.csv?token=AV2SENBCOCRH2KGTFSBH373DJ5L7O") |> 
+                    "Traffic_Monitoring_Stations.csv") |> 
     read_csv()
 ```
 
 ```{r}
 traffic_signal_cabinet <- paste0(urlRemote,
                     pathGithub,
-                    "Traffic_Signal_Cabinets.csv?token=AV2SENFJ7LBWXCUNM3WYZ53DJ5MA6") |> 
+                    "Traffic_Signal_Cabinets.csv") |> 
     read_csv()
 ```
 
