@@ -1,0 +1,7 @@
+"0",""
+"0","ggplot(car_crashes_data_summary, aes(x = monthly_cases, y = n))+"
+"0","  geom_point()+"
+"0","  geom_smooth()+"
+"0","  labs(title = ""Car Crashes Cases by Months before 2000"","
+"0","       y = ""Numbers of Cases"")+"
+"0","  theme_light()"

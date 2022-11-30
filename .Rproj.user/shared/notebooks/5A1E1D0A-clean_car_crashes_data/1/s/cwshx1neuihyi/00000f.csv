@@ -1,0 +1,4 @@
+"0","knitr::opts_chunk$set(dev = ""png"","
+"0","                      dpi = 300,"
+"0","                      echo = FALSE,"
+"0","                      cache = TRUE)"

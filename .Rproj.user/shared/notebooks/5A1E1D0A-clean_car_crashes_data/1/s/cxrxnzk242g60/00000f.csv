@@ -1,0 +1,3 @@
+"0","car_crash |> "
+"0","  left_join(car_crash_details, by = c(""CRIMEID"", ""CCN"")) -> a1"
+"0","map_df(a1, ~sum(is.na(.)))"

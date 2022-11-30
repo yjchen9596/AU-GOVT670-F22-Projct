@@ -1,0 +1,4 @@
+"0","a1 |> "
+"0","  select(-c(""LOCATIONERROR"", ""LASTUPDATEDATE"",""MPDLATITUDE"",""MPDLONGITUDE"",""STREETSEGID"", ""TODATE"",""EVENTID"",""MAR_ADDRESS"", ""ROADWAYSEGID"", ""MPDGEOX"",""MPDGEOY"")) -> a2"
+"0",""
+"0","map_df(a2, ~sum(is.na(.)))"

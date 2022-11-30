@@ -222,5 +222,6 @@ no_na_all_car_crashes_data |>
   filter(year > 2010) -> cases.after2010
 
 # write_csv(cases.after2010, file = "cases.after2010.csv")
+# write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz")
 ```
 
