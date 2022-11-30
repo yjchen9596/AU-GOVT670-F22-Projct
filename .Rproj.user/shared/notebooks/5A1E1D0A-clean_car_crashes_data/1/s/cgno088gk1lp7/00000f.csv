@@ -1,0 +1,8 @@
+"0","after2010 <- car_crashes_data_summary |> "
+"0","  filter(n > 0 & monthly_cases > ""2010-01-01"") ## the first record is in 1900"
+"0",""
+"0","ggplot(after2010, aes(x = monthly_cases, y = n))+"
+"0","  geom_point()+"
+"0","  geom_smooth()+"
+"0","    labs(title = ""Car Crashes Cases by Months after 2010"","
+"0","       y = ""Numbers of Cases"")"

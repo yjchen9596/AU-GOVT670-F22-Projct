@@ -1,0 +1,227 @@
+---
+title: "data_cleaning"
+author: "Yuka Chen"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup-chunk, include=FALSE}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 300,
+                      echo = FALSE,
+                      cache = TRUE)
+```
+### loading packages 
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+########### set up path for dataset ########
+urlRemote  <- "https://media.githubusercontent.com/media/"
+pathGithub <- "yjchen9596/data/main/GOVT670/" 
+
+##https://github.com/yjchen9596/data/tree/main/GOVT670 ## path to where I store the data
+########## laoding data ###################
+economic_dc_ward <- 
+  paste0(urlRemote,
+         pathGithub, 
+         "ACS_Economic_Characteristics_DC_Ward.csv") |> 
+  read_csv()
+
+
+car_crash <- paste0(urlRemote,
+                    pathGithub,
+                    "Crashes_in_DC.csv") |> 
+  read_csv()
+car_crash_details <-  paste0(urlRemote, 
+                             pathGithub, 
+                             "Crash_Details_Table.csv") |> 
+  read_csv()
+
+
+pavement_making <- paste0(urlRemote,
+                          pathGithub,
+                          "Pavement_Marking.csv") |> 
+  read_csv()
+
+
+street_lights <- paste0(urlRemote,
+                        pathGithub,
+                        "Street_Lights.csv") |> 
+  read_csv()
+
+
+traffic_camera <- paste0(urlRemote,
+                         pathGithub,
+                         "Traffic_Camera.csv") |> 
+  read_csv()
+
+
+traffic_monitor_location <- paste0(urlRemote,
+                                   pathGithub,
+                                   "Traffic_Monitoring_Stations.csv") |> 
+  read_csv()
+
+traffic_signal_cabinet <- paste0(urlRemote,
+                                 pathGithub,
+                                 "Traffic_Signal_Cabinets.csv") |> 
+  read_csv()
+```
+
+### find common variables
+```{r}
+# for street info #
+intersect(colnames(street_lights),colnames(pavement_making))
+```
+
+
+```{r}
+
+distinct(car_crash_details)
+
+car_crash |> 
+  filter(CRIMEID=="23522156")
+
+car_crash_details |> 
+  filter(CRIMEID=="23522156")
+
+
+car_crash |> 
+  filter(OBJECTID=="140193753")
+
+car_crash_details |> 
+  filter(OBJECTID=="140193753")
+
+car_crash |> 
+  select(-"OBJECTID") -> car_crash
+
+car_crash_details |> 
+  select(-"OBJECTID") -> car_crash_details
+## CCN and CRIMEID is case ID
+## individual ID is OBJECTID
+```
+
+
+### combine data
+```{r}
+car_crash |> 
+  left_join(car_crash_details, by = c("CRIMEID", "CCN")) -> a1
+map_df(a1, ~sum(is.na(.)))
+
+```
+
+
+```{r}
+a1 |> 
+  select(-c("LOCATIONERROR", "LASTUPDATEDATE","MPDLATITUDE","MPDLONGITUDE","STREETSEGID", "TODATE","EVENTID","MAR_ADDRESS", "ROADWAYSEGID", "MPDGEOX","MPDGEOY")) -> a2
+
+map_df(a2, ~sum(is.na(.)))
+```
+
+
+```{r}
+a2 |> 
+  drop_na() |> 
+  mutate(FROMDATE =  as_datetime(FROMDATE),
+         date = as_date(FROMDATE),
+         time =  hour(FROMDATE),
+         month = month(FROMDATE),
+         year = year(FROMDATE))-> no_na_all_car_crashes_data
+
+no_na_all_car_crashes_data |> 
+  mutate(time_period = case_when(
+    time > 6 & time < 12 ~ "Morning",
+    time >= 12 & time < 17 ~ "Afternoon",
+    time >= 17 & time < 21 ~ "Evening",
+    time >=21 | time <= 6 ~ "Night")) -> no_na_all_car_crashes_data
+  
+## save data
+# write_csv(no_na_all_car_crashes_data, file = "no_na_all_car_crashes_data.csv")
+```
+
+```{r}
+no_na_all_car_crashes_data |> 
+  filter(MAJORINJURY == "Y") -> major_injured_cases
+```
+
+```{r}
+no_na_all_car_crashes_data |> 
+  ggplot(mapping = aes(x = time_period, fill = time_period))+
+  geom_bar()+
+  labs(y = "Case Numbers", x = "Time Period",
+       title = "Car Crashes by Time Period")+
+  theme_light()
+```
+
+
+```{r}
+car_crashes_data_summary <- no_na_all_car_crashes_data |> 
+ mutate(monthly_cases = floor_date(date, unit = "month")) %>%            
+  count(monthly_cases) %>%           # group data by week and count rows per group (creates column 'n')
+  tidyr::complete(                  # ensure all weeks are present, even those with no cases reported
+    monthly_cases = seq.Date(          # re-define the "weekly_cases" column as a complete sequence,
+      from = min(monthly_cases),       # from the minimum date
+      to = max(monthly_cases),         # to the maxiumum date
+      by = "month"),                   # by weeks
+    fill = list(n = 0))             # fill-in NAs in the n counts column with 0
+
+```
+
+```{r }
+plot(car_crashes_data_summary)
+
+ggplot(car_crashes_data_summary, aes(x = monthly_cases, y = n))+
+  geom_point()+
+  geom_smooth()+
+  labs(title = "Car Crashes Cases by Months before 2000",
+       y = "Numbers of Cases")+
+  theme_light()
+```
+
+
+```{r }
+before2000 <- car_crashes_data_summary |> 
+  filter(n > 0 & monthly_cases < "2000-01-01") ## the first record is in 1900
+
+ggplot(before2000, aes(x = monthly_cases, y = n))+
+  geom_point()+
+  geom_smooth()+
+    labs(title = "Car Crashes Cases by Months between 2000 to 2010",
+       y = "Numbers of Cases")
+```
+
+```{r }
+between2000n2010 <- car_crashes_data_summary |> 
+  filter(n > 0 & monthly_cases > "2000-01-01" & monthly_cases < "2010-01-01") ## the first record is in 1900
+
+ggplot(between2000n2010, aes(x = monthly_cases, y = n))+
+  geom_point()+
+  geom_smooth()+
+  labs(title = "Car Crashes Cases by Months between 2000 to 2010",
+       y = "Numbers of Cases")
+```
+
+
+```{r }
+after2010 <- car_crashes_data_summary |> 
+  filter(n > 0 & monthly_cases > "2010-01-01") ## the first record is in 1900
+
+ggplot(after2010, aes(x = monthly_cases, y = n))+
+  geom_point()+
+  geom_smooth()+
+    labs(title = "Car Crashes Cases by Months after 2010",
+       y = "Numbers of Cases")
+```
+
+```{r}
+
+no_na_all_car_crashes_data |> 
+  filter(year > 2010) -> cases.after2010
+
+# write_csv(cases.after2010, file = "cases.after2010.csv")
+# write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz")
+```
+
