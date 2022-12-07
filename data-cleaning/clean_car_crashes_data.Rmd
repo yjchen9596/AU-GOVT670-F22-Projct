@@ -96,10 +96,10 @@ car_crash_details |>
   filter(OBJECTID=="140193753")
 
 car_crash |> 
-  select(-"OBJECTID") -> car_crash
+  dplyr::select(-"OBJECTID") -> car_crash
 
 car_crash_details |> 
-  select(-"OBJECTID") -> car_crash_details
+  dplyr::select(-"OBJECTID") -> car_crash_details
 ## CCN and CRIMEID is case ID
 ## individual ID is OBJECTID
 ```
@@ -116,7 +116,7 @@ map_df(a1, ~sum(is.na(.)))
 
 ```{r}
 a1 |> 
-  select(-c("LOCATIONERROR", "LASTUPDATEDATE","MPDLATITUDE","MPDLONGITUDE","STREETSEGID", "TODATE","EVENTID","MAR_ADDRESS", "ROADWAYSEGID", "MPDGEOX","MPDGEOY")) -> a2
+   dplyr::select(-c("LOCATIONERROR", "LASTUPDATEDATE","MPDLATITUDE","MPDLONGITUDE","STREETSEGID", "TODATE","EVENTID","MAR_ADDRESS", "ROADWAYSEGID", "MPDGEOX","MPDGEOY")) -> a2
 
 map_df(a2, ~sum(is.na(.)))
 ```
@@ -144,7 +144,7 @@ no_na_all_car_crashes_data |>
 
 ```{r}
 no_na_all_car_crashes_data |> 
-  filter(MAJORINJURY == "Y") -> major_injured_cases
+   dplyr::filter(MAJORINJURY == "Y") -> major_injured_cases
 ```
 
 ```{r}
@@ -219,9 +219,9 @@ ggplot(after2010, aes(x = monthly_cases, y = n))+
 ```{r}
 
 no_na_all_car_crashes_data |> 
-  filter(year > 2010) -> cases.after2010
+   dplyr::filter(year > 2010) -> cases.after2010
 
-# write_csv(cases.after2010, file = "cases.after2010.csv")
-# write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz")
+#write_csv(cases.after2010, file = "cases.after2010.csv")
+#write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz")
 ```
 
