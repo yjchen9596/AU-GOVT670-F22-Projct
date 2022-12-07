@@ -71,6 +71,8 @@ _ Speeding is the number one factor with higher probabilities of be involved in 
 
 lr.anova= anova(fatal_logit, test="Chisq") 
 lr.anova 
+
+#All the selcted variables are statistically significant 
 ```
 
 KNN Classification
