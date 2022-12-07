@@ -1,1 +1,0 @@
-{"frames":[{"func":"readRDS(cases.after2010.rds)","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error in readRDS(cases.after2010.rds) : \n  object 'cases.after2010.rds' not found\n"}

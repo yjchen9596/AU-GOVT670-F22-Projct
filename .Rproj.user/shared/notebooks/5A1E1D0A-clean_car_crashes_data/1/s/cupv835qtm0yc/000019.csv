@@ -1,8 +1,0 @@
-"0",""
-"0","car_crash |> "
-"0","  select(-""OBJECTID"") -> car_crash"
-"0",""
-"0","car_crash_details |> "
-"0","  select(-""OBJECTID"") -> car_crash_details"
-"0","## CCN and CRIMEID is case ID"
-"0","## individual ID is OBJECTID"

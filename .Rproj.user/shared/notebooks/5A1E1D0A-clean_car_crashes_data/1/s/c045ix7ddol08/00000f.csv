@@ -1,2 +1,0 @@
-"0","no_na_all_car_crashes_data |> "
-"0","  filter(MAJORINJURY == ""Y"") -> major_injured_cases"

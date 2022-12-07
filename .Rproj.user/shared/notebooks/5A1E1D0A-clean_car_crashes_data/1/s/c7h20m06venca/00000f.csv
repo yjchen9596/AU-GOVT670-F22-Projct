@@ -1,6 +1,0 @@
-"0","no_na_all_car_crashes_data |> "
-"0","  ggplot(mapping = aes(x = time_period, fill = time_period))+"
-"0","  geom_bar()+"
-"0","  labs(y = ""Case Numbers"", x = ""Time Period"","
-"0","       title = ""Car Crashes by Time Period"")+"
-"0","  theme_light()"

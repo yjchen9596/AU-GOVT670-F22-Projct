@@ -1,0 +1,108 @@
+---
+title: "NBA Multilevel Model"
+author: "Yuka Chen"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+
+```{r include=FALSE}
+#Loading libraries
+library(tidyverse)
+library(ISLR)
+library(tidymodels)
+library(DAAG)
+library(party)
+library(rpart)
+library(rpart.plot)
+library(mlbench)
+library(caret)
+library(pROC)
+library(tree)
+library(broom)
+```
+
+
+```{r include=FALSE}
+#Loading data
+df_dc<- read_rds("../data_cleaning/cases.after2010.rds")
+```
+
+```{r include=FALSE}
+#Dropping the variables that are not useful for prediction or with many levels i.e Licence plate state, Vehicle type 
+df_analysis<- df_dc %>%
+dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE  ))
+```
+
+```{r}
+df_analysis |> 
+  group_by(PERSONTYPE) |> 
+  summarise("Numbers of Accidents"=n()) |> 
+  knitr::kable()
+```
+
+
+
+```{r}
+options(scipen=10000)
+
+df_analysis |> 
+  ggplot(aes(x = PERSONTYPE))+
+  geom_bar()+
+  coord_flip()+
+  labs(y = "Numbers of Accidents")+
+  scale_y_continuous()
+  
+```
+```{r}
+options(scipen=10000)
+df_analysis |> 
+  group_by(WARD) |> 
+  summarise("Numbers of Accidents"=n()) |> 
+  knitr::kable()
+```
+
+
+```{r}
+df_analysis |> 
+  ggplot(aes(x = WARD))+
+  geom_bar()+
+  coord_flip()+
+  labs(y = "Numbers of Accidents")+
+  scale_y_continuous()
+```
+```{r}
+#Changing variables to factors
+fact_vars <- c('WARD', 'SPEEDING_INVOLVED', 'PERSONTYPE', 'FATAL', 'MAJORINJURY', 'MINORINJURY', 'TICKETISSUED','SPEEDING','IMPAIRED', 'month', 'time_period')
+df_analysis[,fact_vars] <- lapply(df_analysis[,fact_vars] , factor)
+```
+
+
+```{r}
+#Logistic Regression with the full data set
+fatal_logit <- glm(FATAL ~ time_period + month + SPEEDING + IMPAIRED + AGE+ TOTAL_VEHICLES + TOTAL_BICYCLES + TOTAL_PEDESTRIANS + MAR_SCORE + WARD + TOTAL_GOVERNMENT, data = df_analysis, family = "binomial")
+
+logit_sum<-summary(fatal_logit)
+logit_sum
+```
+
+
+```{r}
+tidy(fatal_logit) |> 
+  filter(p.value<0.05) |> 
+  mutate(p.value = round(p.value, 5)) |> 
+  dplyr::arrange(p.value) |> 
+  knitr::kable()
+```
+
+
+```{r}
+glance(fatal_logit) |> 
+  knitr::kable()
+```
+
+
+```{r}
+logout1 <- augment(fatal_logit)
+```
+
