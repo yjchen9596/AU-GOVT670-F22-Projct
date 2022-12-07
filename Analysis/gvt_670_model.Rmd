@@ -56,6 +56,16 @@ fatal_logit <- glm(FATAL ~ time_period + month + SPEEDING + IMPAIRED + AGE+ TOTA
 logit_sum<-summary(fatal_logit)
 logit_sum
 ```
+- Ward 7 & 8 According to the 2020 census data Ward 7 and 8 have the lowest income levels and very high poverty level in the District of Columbia. From our model it shows that it is the state with highest probabilities of having Fatal accidents. 
+
+- Bikers are also at high risk of being involves in fatal accidents - there is need for DC to invest in bicycle safe cities. 
+
+- Interestingly age has not much effect of cause of fatal accidents
+
+_ Speeding is the number one factor with higher probabilities of be involved in Fatal accidents, for every accident that take place there is a probability of 2.71 if speeding.
+
+- Night Driving isn't safe in DC with probabilities of 1.34 of being involved in a fatal accident. 
+
 
 ```{r}
 #Data Spilt for random trees 
