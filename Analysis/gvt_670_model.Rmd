@@ -28,7 +28,7 @@ library(tree)
 
 ```{r}
 #Loading data
-df_dc<- read_csv("../data-cleaning/cases.after2010.csv")
+df_dc<- read_rds("../data_cleaning/cases.after2010.rds")
 
 glimpse(df_dc)
 ```
@@ -36,7 +36,7 @@ glimpse(df_dc)
 ```{r}
 #Dropping the variables that are not useful for prediction or with many levels i.e Licence plate state, Vehicle type 
 df_analysis<- df_dc %>%
-dplyr::select(-c( PERSONID , OBJECTID.y,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OBJECTID.x,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE  ))
+dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE  ))
 glimpse(df_analysis)
 ```
 

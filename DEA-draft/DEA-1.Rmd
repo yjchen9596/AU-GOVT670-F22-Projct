@@ -1,0 +1,13 @@
+---
+title: "DEA"
+output: html_notebook
+---
+
+## I am so used to using r markdown but I wanna try r notebook
+
+
+cases <- readRDS("data-cleaning/cases.after2010.rds")
+
+dim(cases)
+
+
