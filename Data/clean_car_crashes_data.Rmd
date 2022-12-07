@@ -36,12 +36,21 @@ car_crash <- paste0(urlRemote,
                     pathGithub,
                     "Crashes_in_DC.csv") |> 
   read_csv()
+dim(car_crash)
+```
+
+
+```{r}
+dim
 car_crash_details <-  paste0(urlRemote, 
                              pathGithub, 
                              "Crash_Details_Table.csv") |> 
   read_csv()
+dim(car_crash_details)
+```
 
 
+```{r}
 pavement_making <- paste0(urlRemote,
                           pathGithub,
                           "Pavement_Marking.csv") |> 

@@ -20,12 +20,14 @@ library(caret)
 library(pROC)
 library(tree)
 library(broom)
+library(kableExtra)
+
 ```
 
 
 ```{r include=FALSE}
 #Loading data
-df_dc<- read_rds("../data_cleaning/cases.after2010.rds")
+df_dc<- read_rds("../Data/cases.after2010.rds")
 ```
 
 ```{r include=FALSE}
@@ -38,7 +40,11 @@ dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOOR
 df_analysis |> 
   group_by(PERSONTYPE) |> 
   summarise("Numbers of Accidents"=n()) |> 
-  knitr::kable()
+   knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "PERSONTYPE.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
 ```
 
 
@@ -54,12 +60,17 @@ df_analysis |>
   scale_y_continuous()
   
 ```
+
 ```{r}
 options(scipen=10000)
 df_analysis |> 
   group_by(WARD) |> 
   summarise("Numbers of Accidents"=n()) |> 
-  knitr::kable()
+    knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "ward.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
 ```
 
 
@@ -83,26 +94,108 @@ df_analysis[,fact_vars] <- lapply(df_analysis[,fact_vars] , factor)
 fatal_logit <- glm(FATAL ~ time_period + month + SPEEDING + IMPAIRED + AGE+ TOTAL_VEHICLES + TOTAL_BICYCLES + TOTAL_PEDESTRIANS + MAR_SCORE + WARD + TOTAL_GOVERNMENT, data = df_analysis, family = "binomial")
 
 logit_sum<-summary(fatal_logit)
-logit_sum
 ```
 
 
 ```{r}
+
 tidy(fatal_logit) |> 
-  filter(p.value<0.05) |> 
-  mutate(p.value = round(p.value, 5)) |> 
-  dplyr::arrange(p.value) |> 
-  knitr::kable()
+    filter(estimate > 0) |>
+  filter(p.value<0.09) |> 
+  dplyr::arrange(desc(estimate)) |> 
+  knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "logit.summary.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
 ```
 
 
 ```{r}
 glance(fatal_logit) |> 
-  knitr::kable()
+  knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "glance3.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+
 ```
 
 
 ```{r}
 logout1 <- augment(fatal_logit)
+```
+
+```{r}
+library(tidymodels)
+
+```
+
+
+KNN Classification
+
+
+```{r}
+#Data Processiing and Scaling 
+trainX <- DC_Train[,names(DC_Train) != "Direction"]
+preProcValues <- preProcess(x = trainX,method = c("center", "scale"))
+preProcValues
+```
+
+```{r}
+#Model Tuning
+set.seed(400)
+ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
+knnFit <- train(FATAL ~ ., data = DC_Train, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
+
+#Output of kNN fit
+knnFit
+```
+
+```{r}
+
+knnPredict <- predict(knnFit,newdata = DC_Test )
+#Get the confusion matrix to see accuracy value and other parameter values
+confusionMatrix(knnPredict, DC_Test$FATAL )
+```
+
+
+```{r}
+#Data Spilt for random trees 
+set.seed(1234)
+
+data_split <- initial_split(df_analysis, prop = 0.7)
+
+DC_Train <- training(data_split)
+DC_Test <- testing(data_split)
+
+```
+
+```{r}
+#Tree Classification
+tree <- rpart(FATAL ~., data = DC_Train)
+rpart.plot(tree)
+
+#Not sure how to make this bigger
+```
+```{r}
+printcp(tree)
+
+#Classification tree:
+rpart(formula = FATAL ~ ., data = DC_Train)
+
+plotcp(tree)
+
+```
+
+```{r}
+#Model selction using the minimum CP 
+tree <- rpart(FATAL ~., data = DC_Train,cp=0.010000)
+```
+
+```{r}
+#Model Accuray 
+p <- predict(tree, DC_Test, type = 'class')
+confusionMatrix (p, DC_Test$FATAL, positive = 'Y')
 ```
 

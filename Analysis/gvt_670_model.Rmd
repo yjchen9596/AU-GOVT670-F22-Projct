@@ -9,9 +9,9 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-```{r}
 #Loading libraries
+
+```{r include=FALSE}
 library(tidyverse)
 library(ISLR)
 library(tidymodels)
@@ -23,13 +23,14 @@ library(mlbench)
 library(caret)
 library(pROC)
 library(tree)
+library(broom)
+library(kableExtra)
 ```
 
+#Loading data
 
 ```{r}
-#Loading data
-df_dc<- read_rds("../data_cleaning/cases.after2010.rds")
-
+df_dc<- read_rds("../Data/cases.after2010.rds")
 glimpse(df_dc)
 ```
 
@@ -39,22 +40,22 @@ df_analysis<- df_dc %>%
 dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE  ))
 glimpse(df_analysis)
 ```
+#Changing variables to factors
 
 ```{r}
-#Changing variables to factors
 fact_vars <- c('WARD', 'SPEEDING_INVOLVED', 'PERSONTYPE', 'FATAL', 'MAJORINJURY', 'MINORINJURY', 'TICKETISSUED','SPEEDING','IMPAIRED', 'month', 'time_period')
 df_analysis[,fact_vars] <- lapply(df_analysis[,fact_vars] , factor)
-str(df_analysis)
+# str(df_analysis)
 ```
 
 
+#Logistic Regression with the full data set
 
 ```{r}
-#Logistic Regression with the full data set
 fatal_logit <- glm(FATAL ~ time_period + month + SPEEDING + IMPAIRED + AGE+ TOTAL_VEHICLES + TOTAL_BICYCLES + TOTAL_PEDESTRIANS + MAR_SCORE + WARD + TOTAL_GOVERNMENT, data = df_analysis, family = "binomial")
 
 logit_sum<-summary(fatal_logit)
-logit_sum
+logit_sum 
 ```
 - Ward 7 & 8 According to the 2020 census data Ward 7 and 8 have the lowest income levels and very high poverty level in the District of Columbia. From our model it shows that it is the state with highest probabilities of having Fatal accidents. 
 
@@ -66,16 +67,32 @@ _ Speeding is the number one factor with higher probabilities of be involved in 
 
 - Night Driving isn't safe in DC with probabilities of 1.34 of being involved in a fatal accident. 
 
+## Chisquare of the Logit Model
+
 ```{r}
-#Chisquare of the Logit Model
 
 lr.anova= anova(fatal_logit, test="Chisq") 
-lr.anova 
-
-#All the selcted variables are statistically significant 
+lr.anova |> 
+  tidy() |> 
+  knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "lr.anova.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+#All the selected variables are statistically significant 
 ```
 
-KNN Classification
+#Data Spilt - training and testing
+```{r}
+
+set.seed(1234)
+data_split <- initial_split(df_analysis, prop = 0.7)
+DC_Train <- training(data_split)
+DC_Test <- testing(data_split)
+
+```
+
+#KNN Classification
 
 ```{r}
 #Data Processiing and Scaling 
@@ -85,7 +102,7 @@ preProcValues
 ```
 
 ```{r}
-#Model Tuning
+#Model Training
 set.seed(400)
 ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
 knnFit <- train(FATAL ~ ., data = DC_Train, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
@@ -101,6 +118,9 @@ knnPredict <- predict(knnFit,newdata = DC_Test )
 confusionMatrix(knnPredict, DC_Test$FATAL )
 ```
 
+```{r}
+
+```
 
 ```{r}
 #Data Spilt for random trees 
@@ -122,10 +142,16 @@ rpart.plot(tree)
 ```
 ```{r}
 printcp(tree)
+```
 
+
+```{r}
 #Classification tree:
 rpart(formula = FATAL ~ ., data = DC_Train)
+```
 
+
+```{r}
 plotcp(tree)
 
 ```
