@@ -23,173 +23,46 @@ library(kableExtra)
 library(MASS)
 library(arm)
 library(leaps)
+library(ggthemr)
+library(fastDummies)
+
 ```
 
 # Loading data
 ```{r include=FALSE}
-df_dc<- read_rds("../Data/cases.after2010.rds")
+new.data<- read_rds("../Data/cases.after2010.rds")
 
-#Dropping the variables that are not useful for prediction or with many levels i.e Licence plate state, Vehicle type
-df_analysis<- df_dc %>%
-dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE))
+FACTOR <- c("PERSONTYPE", "TIME_PERIOD", "WARD", "FATAL", "SPEEDING_INVOLVED","INVEHICLETYPE")
+new.data[,FACTOR] <- lapply(new.data[,FACTOR] , factor)
 
-#Changing variables to factors
-fact_vars <- c('WARD', 'SPEEDING_INVOLVED', 'PERSONTYPE', 'FATAL', 'MAJORINJURY', 'MINORINJURY', 'TICKETISSUED','SPEEDING','IMPAIRED', 'time_period')
-df_analysis[,fact_vars] <- lapply(df_analysis[,fact_vars] , factor)
-
-# fit a logistic regression model using all of the predictor variables
-df_analysis |> 
-  mutate(FATAL = ifelse(FATAL == "Y", 1, 0)) |> 
-  filter(AGE >= 16 & AGE < 90) |> 
-  dplyr::select(FATAL, everything())-> df_analysis
-
-# set all columns cap
-df_analysis <- df_analysis %>% rename_all(toupper)
-
-## You must be at least 16 years old to get a DC DMV learner permit, and you must pass vision screening and knowledge tests and provide documentation that proves your identity, residency, and eligibility, among other things. DC DMV offers learners either a REAL ID or a Limited Purpose learner permit
-glimpse(df_analysis)
-```
-
-# Get variables name 
-```{r}
-# column_names <- colnames(df_analysis)
-# cat(paste(column_names), collapse = ", ")
-# dput(as.character(column_names))
-```
-
-# Variables Summary
-```{r}
-
-data_frame <- df_analysis
-
-# calculate the mean number of total vehicles involved in collisions by ward
-mean_vehicles_by_ward <- aggregate(TOTAL_VEHICLES ~ WARD, data_frame, mean)
-
-# print the mean number of vehicles by ward
-print(mean_vehicles_by_ward)
-
-# calculate the mean number of total bicycles involved in collisions by ward
-mean_bicycles_by_ward <- aggregate(TOTAL_BICYCLES ~ WARD, data_frame, mean)
-
-# print the mean number of bicycles by ward
-print(mean_bicycles_by_ward)
-
-# calculate the mean number of total pedestrians involved in collisions by ward
-mean_pedestrians_by_ward <- aggregate(TOTAL_PEDESTRIANS ~ WARD, data_frame, mean)
-
-# print the mean number of pedestrians by ward
-print(mean_pedestrians_by_ward)
-
-```
-```{r}
-df_analysis |> 
-  group_by(PERSONTYPE) |> 
-  summarise("Numbers of Accidents"=n()) |> 
-   knitr::kable("latex", booktabs = T) %>%
-  kable_styling() %>%
-  save_kable(file = "PERSONTYPE.png",
-             zoom = 1.5,
-             bs_theme = "Sandstone")
-```
-```{r}
-options(scipen=10000)
-ggthemr("fresh")
-
-df_analysis |> 
-  ggplot(aes(x = PERSONTYPE))+
-  geom_bar()+
-  coord_flip()+
-  labs(y = "Numbers of Accidents",
-       title ="Distribution of Person Types",
-       x = "")+
-  scale_y_continuous()+
-theme(plot.title = element_text(hjust = 0.5))
-
-  
-```
-```{r}
-options(scipen=10000)
-
-ggthemr("fresh")
-
-df_analysis |> 
-  group_by(WARD) |> 
-  summarise("Numbers of Accidents"=n()) |> 
-    knitr::kable("latex", booktabs = T) %>%
-  kable_styling() %>%
-  save_kable(file = "ward.png",
-             zoom = 1.5,
-             bs_theme = "Sandstone")
-```
-
-```{r}
-df_analysis |> 
-  ggplot(aes(x = WARD))+
-  geom_bar()+
-  coord_flip()+
-  labs(y = "Numbers of Accidents")+
-  scale_y_continuous()
+glimpse(new.data)
 ```
 
 
-
+```{r include=FALSE}
+map_df(new.data, ~class(.))
+```
 
 #Logistic Regression with the full data set
 
 ```{r}
-full.model <- glm(FATAL ~ ., data = df_analysis, family = "binomial")
+
+full.model <- glm(FATAL ~ ., data = new.data, family = "binomial")
 display(full.model)
 ```
 
 #Logistic Regression with the partial data set
 
-```{r}
-# load the caret package
-library(caret)
-
-df_analysis$FATAL <- as.factor(df_analysis$FATAL)
-# split the data into training and test sets
-train_indices <- createDataPartition(df_analysis$FATAL, p = 0.7, list = FALSE)
-train <- df_analysis[train_indices,]
-test <- df_analysis[-train_indices,]
-
-library(tune)
-tuneGrid = expand.grid(interaction.depth = c(1, 5, 9), 
-                        n.trees = (1:30)*50, 
-                        shrinkage = 0.1,
-                        n.minobsinnode = 20)
-
-# train a logistic regression model using the training data
-model <- train(FATAL ~ TIME_PERIOD + MONTH + SPEEDING + AGE + WARD + TOTAL_GOVERNMENT, 
-               data = train, 
-               method = "glm", 
-               family = "binomial",
-               trControl = trainControl(method = "cv"))
-
-# generate a summary of the model's performance using the test data
-confusionMatrix(test$FATAL, predict(model, newdata = test))
-
-```
-
 #Stepwise
 ```{r}
-df_dc |> 
-  slice_sample(n = 5000) -> df_dc2
-
-
-df_dc2 |> 
-  mutate(FATAL = ifelse(FATAL == "Y", 1, 0)) |> 
-  filter(AGE >= 16 & AGE < 90) |> 
-  dplyr::select(FATAL, everything()) |> 
-  rename_all(toupper)-> df_dc3
+new.data |> 
+  slice_sample(n = 5000) -> sample_data
 
 # Fit a logistic regression model to your data
-model <- glm(FATAL ~ INTAPPROACHDIRECTION+TIME_PERIOD + MONTH + SPEEDING_INVOLVED + AGE + WARD + PERSONTYPE + INVEHICLETYPE+NEARESTINTSTREETNAME+YEAR+ TIME, data = df_dc3, family = "binomial")
-
+model <- glm(FATAL ~ ., data = sample_data, family = "binomial", maxit = 100)
 # Perform a stepwise regression
 step_model <- stepAIC(model, direction = "both")
 ```
-
 
 
 ```{r}
@@ -200,43 +73,16 @@ tidy(step_model) |>
   dplyr::arrange(p.value) |> 
     knitr::kable("latex", booktabs = T) %>%
   kable_styling() %>%
-  save_kable(file = "../Output/stepwise.png",
+  save_kable(file = "../Output/stepwise.output.png",
              zoom = 1.5,
              bs_theme = "Sandstone")
 ```
 # Initial Logit
-```{r}
 
-df_dc<- read_rds("../Data/cases.after2010.rds")
-
-
-df_dc |> mutate(PERSONTYPE = recode(PERSONTYPE, 
-                       "0" = "Unknown", 
-                     "Occupant o" = "Unknown", 
-                     "Other" = "Unknown", 
-                     "Unknown" = "Unknown",
-                     "Electric M" = "ElectricalCar"),
-                     WARD = as.character(WARD),
-                     PERSONTYPE = as.character(PERSONTYPE)) |> 
-  mutate(FATAL = ifelse(FATAL == "Y", 1, 0)) |> 
-    filter(AGE >= 16 & AGE < 90) |> 
-  mutate(WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD),
-         FATAL = if_else(FATAL == 1, 0, 1),
-         SPEEDING_INVOLVED = if_else(SPEEDING_INVOLVED == 1, 0, 1)) |> 
-        filter(PERSONTYPE !=  "Unknown" &  PERSONTYPE !=  "Witness" & PERSONTYPE !=  "Reporting") |> 
-  dplyr::select(FATAL, everything()) |> 
-  rename_all(toupper)  |> 
-  filter(WARD != "Unknown") -> dataframe12
-
-unique(df_analysis$PERSONTYPE)
-unique(df_analysis$WARD)
-unique(df_analysis$SPEEDING_INVOLVED)
-
-```
 
 
 ```{r}
-logit_summary <- glm(FATAL ~ TIME_PERIOD + MONTH + SPEEDING_INVOLVED + AGE + WARD + PERSONTYPE, data = df_analysis, family = "binomial")
+logit_summary <- glm(FATAL ~ TIME_PERIOD + MONTH + SPEEDING_INVOLVED + AGE + WARD + PERSONTYPE, data = new.data, family = "binomial")
 summary(logit_summary)
 tidy(logit_summary)
 ```
@@ -274,7 +120,7 @@ logout1 <- augment(fatal_logit)
 ```{r}
 library(MASS)
 # include:false
-rr <-  lm.ridge(FATAL ~ ., lambda=seq(0,100,1), data = df_analysis)
+rr <-  lm.ridge(FATAL ~ ., lambda=seq(0,100,1), data = new.data)
 head(rr$coef, n=6)
 ```
 
@@ -303,7 +149,7 @@ ggplot(broom::tidy(rr),
 
 library(MASS)
 # include:false
-rr <-  lm.ridge(FATAL ~ ., lambda=seq(390,425,1), data = df_analysis)
+rr <-  lm.ridge(FATAL ~ ., lambda=seq(390,425,1), data = new.data)
 head(rr$coef, n=6)
 MASS::select(rr)
 ggplot(broom::tidy(rr), 
@@ -315,10 +161,10 @@ ggplot(broom::tidy(rr),
 
 
 ```{r}
-reg <- glm(FATAL ~ ., data = df_analysis) 
+reg <- glm(FATAL ~ ., data = new.data) 
 x <- model.matrix(reg)
 dim(x)
-y <- df_analysis$FATAL
+y <- new.data$FATAL
 
 rr <- glmnet(x, y, alpha = 0)
 ```
@@ -345,7 +191,7 @@ rr_cv$cvm[rr_cv$index[2]] - rr_cv$cvm[rr_cv$index[1]]
 
 ```{r}
 library(glmnet)
-reg <- lm(FATAL ~ ., data = df_analysis) 
+reg <- lm(FATAL ~ ., data = new.data) 
 fit <- glmnet(x, y, family = "binomial", alpha = 1)
 
 x <- model.matrix(reg)
@@ -360,7 +206,7 @@ dim(x)
 
 ```{r}
 library(tidymodels)
-data_split <- initial_split(df_analysis, prop = 2/3)
+data_split <- initial_split(new.data, prop = 2/3)
 data_train <- training(data_split)
 data_test <- testing(data_split)
 ```
@@ -383,7 +229,7 @@ confusionMatrix(knnPredict, DC_Test$FATAL )
 #Data Spilt for random trees 
 set.seed(1234)
 
-data_split <- initial_split(df_analysis, prop = 0.7)
+data_split <- initial_split(new.data, prop = 0.7)
 
 DC_Train <- training(data_split)
 DC_Test <- testing(data_split)

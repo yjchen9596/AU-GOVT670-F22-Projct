@@ -4,12 +4,6 @@ author: "Yuka Chen"
 date: "`r Sys.Date()`"
 output: html_document
 ---
-```{r setup-chunk, include=FALSE}
-knitr::opts_chunk$set(dev = "png",
-                      dpi = 300,
-                      echo = FALSE,
-                      cache = TRUE)
-```
 # loading packages 
 ```{r include=FALSE}
 library(tidyverse)
@@ -31,6 +25,7 @@ library(MASS)
 library(arm)
 library(leaps)
 library(ggthemr)
+library(janitor)
 ```
 
 # Load data from Github - saved from OpenDataDC
@@ -44,10 +39,7 @@ pathGithub <- "yjchen9596/data/main/GOVT670/"
 economic_dc_ward <- 
   paste0(urlRemote,
          pathGithub, 
-         "ACS_Economic_Characteristics_DC_Ward.csv") |> 
-  read_csv()
-
-
+         "ACS_Economic_Characteristics_DC_Ward.csv") |>   read_csv()
 car_crash <- paste0(urlRemote,
                     pathGithub,
                     "Crashes_in_DC.csv") |> read_csv()
@@ -71,13 +63,118 @@ traffic_signal_cabinet <- paste0(urlRemote,
                                  "Traffic_Signal_Cabinets.csv") |> read_csv()
 ```
 
-#StreetLights with Cases
+# Data Merging
+
+## cases.after2010
+```{r}
+library(lubridate)
+cases.after2010 <- car_crash |> 
+  left_join(car_crash_details, by = c("CRIMEID", "CCN")) |> 
+   dplyr::select(-c("LOCATIONERROR", "LASTUPDATEDATE","MPDLATITUDE","MPDLONGITUDE","STREETSEGID", "TODATE","EVENTID","MAR_ADDRESS", "ROADWAYSEGID", "MPDGEOX","MPDGEOY")) |> 
+  mutate(FROMDATE =  as_datetime(FROMDATE),
+         DATE = as_date(FROMDATE),
+         TIME =  hour(FROMDATE),
+         MONTH = month(FROMDATE),
+         YEAR = year(FROMDATE)) |> 
+  mutate(TIME_PERIOD = case_when( TIME > 6 & TIME < 12 ~ "Morning",
+                                  TIME >= 12 & TIME < 17 ~ "Afternoon",
+                                  TIME >= 17 & TIME < 21 ~ "Evening",
+                                  TIME >=21 | TIME <= 6 ~ "Night")) |> 
+   dplyr::filter(YEAR > 2010) |> 
+    rename_all(toupper)  |> 
+            filter(PERSONTYPE ==  "Driver" | PERSONTYPE ==  "Passenger" | PERSONTYPE ==  "Pedestrian" | PERSONTYPE == "Bicyclist") |>
+  mutate(
+    # PERSONTYPE =  dplyr::recode(PERSONTYPE, ## dealing multicollinearity
+    #                          "0" = "Unknown",
+    #                          "Occupant o" = "Unknown",
+    #                          "Other" = "Unknown",
+    #                          "Unknown" = "Unknown",
+    #                          "Electric M" = "Driver",
+    #                          "Witness" = "NotApplicable",
+    #                          "Reporting" = "NotApplicable",
+    #                          "Streetcar" = "NotApplicable"),
+                     WARD = as.character(WARD),
+                     PERSONTYPE = as.character(PERSONTYPE),
+         INVEHICLETYPE = dplyr::recode(INVEHICLETYPE, "0" = "Unknown",
+                             "Other Vehicle" = "Other",
+                             "None" = "None",
+                             "Unknown" = "Unknown", "Other Small/light Truck" = "Truck",
+                             "Pickup Truck" = "Truck",
+                             "Large/heavy Truck" = "Truck",
+                             "Suv (sport Utility Vehicle)" = "SUV",
+                              "Passenger Van" = "Van",
+                             "Passenger Car/automobile" = "Car",
+                             "Cargo Van"="Van",
+                             "Motorhome/camper/rv (recreational Vehicle)" = "Van",
+                             "Atv (all Terrain Vehicle)" = "ATV",
+                             "Drugs/ Narcotics"   = "Unknown",
+                             "Firearms" = "Unknown"),
+                     WARD = as.character(WARD),
+                     INVEHICLETYPE = as.character(INVEHICLETYPE),
+         WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD),
+         SPEEDING_INVOLVED = if_else(SPEEDING_INVOLVED == 1, 0, 1),
+                  FATAL = ifelse(FATAL == "Y", 1, 0),
+         TIME = as.double(TIME),
+         PERSONTYPE = as.factor(PERSONTYPE),
+         INVEHICLETYPE = as.factor(INVEHICLETYPE),
+         FATAL = as.factor(FATAL),
+         MONTH = as.factor(MONTH),
+         TIME_PERIOD = as.factor(TIME_PERIOD),
+         SPEEDING_INVOLVED = as.factor(SPEEDING_INVOLVED),
+         WARD = as.factor(WARD)) |> 
+  filter(AGE < 90 & AGE> 0)|> 
+  filter(!(PERSONTYPE == "Driver" & AGE <= 16),WARD != "Unknown") |>   
+  dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, DATE, YEAR, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, LICENSEPLATESTATE,TICKETISSUED,"OBJECTID.X","OBJECTID.Y", FATAL_PEDESTRIAN,MAR_SCORE,FATALPASSENGER,MAJORINJURY, MINORINJURY,FATAL_BICYCLIST,FATAL_DRIVER, SPEEDING)) |> 
+  dplyr::select(-contains("IMPAIRED"), -contains("UNKNOWN"), -contains("INJURIES")) |> 
+  dplyr::select(FATAL, everything())
+
+  
+# colnames(cases.after2010)
+unique(cases.after2010$FATAL)
+  # unique(cases.after2010$PERSONTYPE)
+
+### dealing overwhelmingly unequal distribution
+# Divide the data based on the 'group' column
+# cases.after2010 <- cases.after2010 %>%
+#   group_by(SPEEDING_INVOLVED) %>%
+#   sample_n(size=5865)
+
+## NOT WORTH TO USE IT AT ALL
+ # PERSONTYPE    n   percent
+ #     Driver 9810 0.8363171
+ #  NonDriver 1920 0.1636829
+write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz") ## rds file size is smaller
+```
+
+```{r}
+# new.data |> 
+#   tabyl(TIME_PERIOD) -> x
+# 
+# 
+# 
+# mean(x$n)
+# min(x$n)
+```
+
+
+
+
 ```{r}
 
-library(janitor)
-street.lights <- street_lights %>%
-  tabyl(WARD) |> 
-  mutate(WARD = recode(WARD, 
+# Divide the data based on the 'group' column
+stratified <- cases.after2010 %>%
+  group_by(SPEEDING_INVOLVED) %>%
+  sample_n(size=5865)
+
+```
+
+## StreetLights with Cases
+```{r}
+## Cleaned data
+case.after2010<- read_rds("cases.after2010.rds") 
+
+street_lights <- street_lights %>%
+  mutate(WARD =  dplyr::recode(WARD, 
                        "1" = "Ward 1",
                        "2" = "Ward 2",
                        "3" = "Ward 3",
@@ -91,9 +188,11 @@ street.lights <- street_lights %>%
          WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD)) |> 
   filter(WARD != "Unknown")
 
+street.lights <- street_lights %>%
+  tabyl(WARD)
 
-traffic.cases <- cases.after2010 %>%
-  filter(time_period == "Night"|time_period =="Evening") |> 
+traffic.cases <- case.after2010 %>%
+  filter(TIME_PERIOD == "Night"|TIME_PERIOD =="Evening") |> 
       mutate(WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD)) |> 
   tabyl(WARD) |> 
   filter(WARD != "Unknown")
@@ -105,14 +204,58 @@ street.lights |>
   left_join(traffic.cases, by = "WARD") |> 
   rename(s.lights = n.x, 
          s.lights.pct = percent.x,
-         s.lights.valid.pct = valid_percent,
          actd.cases =  n.y,
-         actd.cases.pct = percent.y) -> lights.accident.df
+         actd.cases.pct = percent.y) |> 
+    mutate(WARD = ifelse(is.na(WARD), "Unknown",WARD)) |> 
+  mutate(WARD = as.character(WARD),
+         WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD)) |> 
+  filter(WARD != "Unknown") |> 
+  drop_na(WARD) -> lights.accident.df
 
 write_rds(lights.accident.df, file = "lights.accident.rds")
 ```
 
 
+# Variables Summary
+
+## Numbers of Accidents by PERSONTYPE
+
+```{r}
+new.data |> 
+  group_by(PERSONTYPE) |> 
+  summarise("Numbers of Accidents"=n()) |> 
+   knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "../Output/PERSONTYPE.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+```
+
+## Numbers of Accidents by WARD
+```{r}
+options(scipen=10000)
+
+ggthemr("fresh")
+
+new.data |> 
+  group_by(WARD) |> 
+  summarise("Numbers of Accidents"=n()) |> 
+    knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "../Output/ward.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+```
+
+## Get variables name 
+```{r}
+# column_names <- colnames(new.data)
+# cat(paste(column_names), collapse = ", ")
+# dput(as.character(column_names))
+```
+
+
+# Plot
 ## Plot StreetLights with Cases
 ```{r}
 library(gridExtra)
@@ -120,8 +263,8 @@ library(gridExtra)
 cases.after2010<- read_rds("cases.after2010.rds")
 
 cases.after2010 |> 
-  mutate(PERSONTYPE = recode(PERSONTYPE, 
-                       "0" = "Unknown", 
+  mutate(PERSONTYPE =  dplyr::recode(PERSONTYPE, 
+                     "0" = "Unknown", 
                      "Occupant o" = "Unknown", 
                      "Other" = "Unknown", 
                      "Unknown" = "Unknown",
@@ -152,22 +295,8 @@ p1 <- cases.after20102 |>
   theme(plot.title = element_text(hjust = 0.5))
 
 p2 <- street_lights |>
-   mutate(WARD = recode(WARD, 
-                       "1" = "Ward 1",
-                       "2" = "Ward 2",
-                       "3" = "Ward 3",
-                       "4" = "Ward 4",
-                       "5" = "Ward 5",
-                       "6" = "Ward 6",
-                       "7" = "Ward 7",
-                       "8" = "Ward 8")) |> 
-    mutate(WARD = ifelse(is.na(WARD), "Unknown",WARD)) |> 
-  mutate(WARD = as.character(WARD),
-         WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD)) |> 
-  filter(WARD != "Unknown") |> 
-  drop_na(WARD) |> 
   ggplot(aes(x = WARD, color = WARD))+
-  geom_bar(fill = "white")+
+  geom_bar()+
   labs(y = "Numbers of Street Lights",
        x= "")+
   scale_y_discrete(position = "right")+
@@ -179,48 +308,41 @@ grid.arrange(p1, p2, nrow=2)
 ```
 
 
-### combine data
+## Log Distribution of Person Types
 ```{r}
+options(scipen=10000)
+ggthemr("fresh")
 
-library(lubridate)
-car_crash |> 
-  left_join(car_crash_details, by = c("CRIMEID", "CCN")) -> a1
-# map_df(a1, ~sum(is.na(.)))
-
-a1 |> 
-   dplyr::select(-c("LOCATIONERROR", "LASTUPDATEDATE","MPDLATITUDE","MPDLONGITUDE","STREETSEGID", "TODATE","EVENTID","MAR_ADDRESS", "ROADWAYSEGID", "MPDGEOX","MPDGEOY")) -> a2
-# 
-# map_df(a2, ~sum(is.na(.)))
-a2 |> 
-  drop_na() |> 
-  mutate(FROMDATE =  as_datetime(FROMDATE),
-         date = as_date(FROMDATE),
-         time =  hour(FROMDATE),
-         month = month(FROMDATE),
-         year = year(FROMDATE))-> no_na_all_car_crashes_data
-
-no_na_all_car_crashes_data |> 
-  mutate(time_period = case_when(
-    time > 6 & time < 12 ~ "Morning",
-    time >= 12 & time < 17 ~ "Afternoon",
-    time >= 17 & time < 21 ~ "Evening",
-    time >=21 | time <= 6 ~ "Night")) -> no_na_all_car_crashes_data
-  
-## save data
-# write_csv(no_na_all_car_crashes_data, file = "no_na_all_car_crashes_data.csv")
-no_na_all_car_crashes_data |> 
-   dplyr::filter(MAJORINJURY == "Y") -> major_injured_cases
+new.data |> 
+  ggplot(aes(x = PERSONTYPE))+
+  geom_bar()+
+  coord_flip()+
+  labs(y = "Numbers of Accidents",
+       title ="Log Distribution of Person Types",
+       x = "")+
+scale_y_log10()+
+theme(plot.title = element_text(hjust = 0.5))
 ```
+## Distribution of Car Accident
+```{r}
+new.data |> 
+  ggplot(aes(x = WARD))+
+  geom_bar()+
+  coord_flip()+
+  labs(y = "Numbers of Accidents",
+       title = "Distribution of Car Accident")+
+  scale_y_continuous()+
+  theme(plot.title = element_text(hjust = 0.5))
 
-# Plot
+```
 
 
 ## time period
 ```{r}
 ggthemr("fresh")
 
-no_na_all_car_crashes_data |> 
-  ggplot(mapping = aes(x = time_period, fill = time_period))+
+cases.after2010 |> 
+  ggplot(mapping = aes(x = TIME_PERIOD, fill = TIME_PERIOD))+
   geom_bar()+
   labs(y = "Case Numbers", x = "Time Period",
        title = "Car Crashes by Time Period",
@@ -232,7 +354,7 @@ no_na_all_car_crashes_data |>
 
 ## months cases
 ```{r}
-car_crashes_data_summary <- no_na_all_car_crashes_data |> 
+car_crashes_data_summary <- cases.after2010 |> 
  mutate(monthly_cases = floor_date(date, unit = "month")) %>%            
   count(monthly_cases) %>%           # group data by week and count rows per group (creates column 'n')
   tidyr::complete(                  # ensure all weeks are present, even those with no cases reported
@@ -244,6 +366,7 @@ car_crashes_data_summary <- no_na_all_car_crashes_data |>
 
 ```
 
+## car_crashes_data_summary
 ```{r } 
 overall.plot<- ggplot(car_crashes_data_summary, aes(x = monthly_cases, y = n))+
   geom_point()+
@@ -287,9 +410,6 @@ after2010.plot <- ggplot(after2010, aes(x = monthly_cases, y = n))+
         x = "Months")+
   theme(plot.title = element_text(hjust = 0.5))
 
-```
-
-```{r}
 ggthemr("fresh")
 grid.arrange(overall.plot, before2000.plot, between2000n2010.plot, after2010.plot, nrow = 2, ncol = 2)
 
@@ -297,23 +417,7 @@ grid.arrange(overall.plot, before2000.plot, between2000n2010.plot, after2010.plo
 
 
 ```{r}
-
-no_na_all_car_crashes_data |> 
-   dplyr::filter(year > 2010) -> cases.after2010
-
-#write_csv(cases.after2010, file = "cases.after2010.csv")
-#write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz")
-```
-
-
-
-```{r}
-colnames(no_na_all_car_crashes_data)
-```
-
-
-```{r}
-df_analysis<- no_na_all_car_crashes_data %>%
+df_analysis<- cases.after2010 %>%
 dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE  ))
 ```
 
