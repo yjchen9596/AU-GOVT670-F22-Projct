@@ -40,6 +40,7 @@ df_analysis<- df_dc %>%
 dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, date, time, year, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, INVEHICLETYPE, LICENSEPLATESTATE  ))
 glimpse(df_analysis)
 ```
+
 #Changing variables to factors
 
 ```{r}
@@ -49,7 +50,7 @@ df_analysis[,fact_vars] <- lapply(df_analysis[,fact_vars] , factor)
 ```
 
 
-#Logistic Regression with the full data set
+#Logistic Regression 
 
 ```{r}
 fatal_logit <- glm(FATAL ~ time_period + month + SPEEDING + IMPAIRED + AGE+ TOTAL_VEHICLES + TOTAL_BICYCLES + TOTAL_PEDESTRIANS + MAR_SCORE + WARD + TOTAL_GOVERNMENT, data = df_analysis, family = "binomial")
@@ -57,30 +58,14 @@ fatal_logit <- glm(FATAL ~ time_period + month + SPEEDING + IMPAIRED + AGE+ TOTA
 logit_sum<-summary(fatal_logit)
 logit_sum 
 ```
-- Ward 7 & 8 According to the 2020 census data Ward 7 and 8 have the lowest income levels and very high poverty level in the District of Columbia. From our model it shows that it is the state with highest probabilities of having Fatal accidents. 
-
-- Bikers are also at high risk of being involves in fatal accidents - there is need for DC to invest in bicycle safe cities. 
-
-- Interestingly age has not much effect of cause of fatal accidents
-
-_ Speeding is the number one factor with higher probabilities of be involved in Fatal accidents, for every accident that take place there is a probability of 2.71 if speeding.
-
-- Night Driving isn't safe in DC with probabilities of 1.34 of being involved in a fatal accident. 
-
-## Chisquare of the Logit Model
 
 ```{r}
+#Finding the log odds exponents 
+t1 <- tbl_regression(fatal_logit, exponentiate = TRUE)
 
-lr.anova= anova(fatal_logit, test="Chisq") 
-lr.anova |> 
-  tidy() |> 
-  knitr::kable("latex", booktabs = T) %>%
-  kable_styling() %>%
-  save_kable(file = "lr.anova.png",
-             zoom = 1.5,
-             bs_theme = "Sandstone")
-#All the selected variables are statistically significant 
+print(t1)
 ```
+
 
 #Data Spilt - training and testing
 ```{r}
@@ -95,7 +80,7 @@ DC_Test <- testing(data_split)
 #KNN Classification
 
 ```{r}
-#Data Processiing and Scaling 
+#Data Processing and Scaling 
 trainX <- DC_Train[,names(DC_Train) != "Direction"]
 preProcValues <- preProcess(x = trainX,method = c("center", "scale"))
 preProcValues
