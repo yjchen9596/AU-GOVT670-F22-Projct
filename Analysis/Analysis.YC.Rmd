@@ -20,253 +20,144 @@ library(pROC)
 library(tree)
 library(broom)
 library(kableExtra)
-library(MASS)
-library(arm)
 library(leaps)
 library(ggthemr)
-library(fastDummies)
+library(janitor)
 
 ```
 
 # Loading data
-```{r include=FALSE}
-new.data<- read_rds("../Data/cases.after2010.rds")
-
-FACTOR <- c("PERSONTYPE", "TIME_PERIOD", "WARD", "FATAL", "SPEEDING_INVOLVED","INVEHICLETYPE")
-new.data[,FACTOR] <- lapply(new.data[,FACTOR] , factor)
-
-glimpse(new.data)
-```
-
-
-```{r include=FALSE}
-map_df(new.data, ~class(.))
-```
-
-#Logistic Regression with the full data set
-
 ```{r}
-
-full.model <- glm(FATAL ~ ., data = new.data, family = "binomial")
-display(full.model)
-```
-
-#Logistic Regression with the partial data set
-
-#Stepwise
-```{r}
-new.data |> 
-  slice_sample(n = 5000) -> sample_data
-
-# Fit a logistic regression model to your data
-model <- glm(FATAL ~ ., data = sample_data, family = "binomial", maxit = 100)
-# Perform a stepwise regression
-step_model <- stepAIC(model, direction = "both")
+new_analysis <- readRDS("../Data/new_analysis.rds")
 ```
 
 
 ```{r}
-# Print the summary of the stepwise model
-summary(step_model)
-
-tidy(step_model) |> 
-  dplyr::arrange(p.value) |> 
-    knitr::kable("latex", booktabs = T) %>%
-  kable_styling() %>%
-  save_kable(file = "../Output/stepwise.output.png",
-             zoom = 1.5,
-             bs_theme = "Sandstone")
-```
-# Initial Logit
-
-
-
-```{r}
-logit_summary <- glm(FATAL ~ TIME_PERIOD + MONTH + SPEEDING_INVOLVED + AGE + WARD + PERSONTYPE, data = new.data, family = "binomial")
-summary(logit_summary)
-tidy(logit_summary)
-```
-
-## Summary Table
-```{r}
-sum.table <- tidy(logit_summary) |> 
-  mutate(p.value = round(p.value, digits = 5),
-         estimate = round(estimate, digits = 5)) |> 
-  dplyr::arrange(p.value) |> 
-  filter(p.value < 0.1) |> 
-    knitr::kable("latex", booktabs = T) %>%
-  kable_styling() %>%
-  save_kable(file = "../Output/initial.table.png",
-             zoom = 1.5,
-             bs_theme = "Sandstone")
+as.data.frame(map_df(new.data, ~class(.))) |> 
+  pivot_longer(col = 1:7, names_to ="variable", values_to = "type") -> variable_type
+map_df(cases.after2010, ~sum(is.na(.))) |> 
+  pivot_longer(col = 1:7, names_to ="variable", values_to = "num") -> isna
+map_df(new.data, ~n_distinct(.)) |> 
+    pivot_longer(col = 1:7, names_to ="variable", values_to = "num") -> uniqueee
 
 ```
 
+# Analysis
+
+## Tree Classification
 ```{r}
-glance(fatal_logit) |> 
-  knitr::kable("latex", booktabs = T) %>%
-  kable_styling() %>%
-  save_kable(file = "glance3.png",
-             zoom = 1.5,
-             bs_theme = "Sandstone")
-```
-
-```{r}
-logout1 <- augment(fatal_logit)
-```
-
-
-# Ridge
-```{r}
-library(MASS)
-# include:false
-rr <-  lm.ridge(FATAL ~ ., lambda=seq(0,100,1), data = new.data)
-head(rr$coef, n=6)
-```
-
-```{r}
-broom::tidy(rr)
-plot(rr)
-```
-
-```{r}
-MASS::select(rr)
-```
-
-```{r}
-ggthemr("fresh")
-
-ggplot(broom::tidy(rr), 
-       aes(x = lambda, y = GCV)) +
-  geom_line() +
-  geom_vline(xintercept = broom::tidy(rr)$lambda[which.min(broom::tidy(rr)$GCV)],
-             color = "red", lty = 2)
-```
-
-
-
-```{r}
-
-library(MASS)
-# include:false
-rr <-  lm.ridge(FATAL ~ ., lambda=seq(390,425,1), data = new.data)
-head(rr$coef, n=6)
-MASS::select(rr)
-ggplot(broom::tidy(rr), 
-       aes(x = lambda, y = GCV)) +
-  geom_line() +
-  geom_vline(xintercept = broom::tidy(rr)$lambda[which.min(broom::tidy(rr)$GCV)],
-             color = "red", lty = 2)
-```
-
-
-```{r}
-reg <- glm(FATAL ~ ., data = new.data) 
-x <- model.matrix(reg)
-dim(x)
-y <- new.data$FATAL
-
-rr <- glmnet(x, y, alpha = 0)
-```
-```{r}
-plot(rr, label = TRUE)
-plot(rr, xvar = "lambda", label = TRUE)
-```
-```{r}
-set.seed(123)
-rr_cv <- cv.glmnet(x, y, alpha=0)
-rr_cv
-```
-```{r}
-plot(rr_cv)
-```
-```{r}
-coef(rr_cv)
-coef(rr_cv, s = "lambda.min") 
-coef(rr_cv) |> as.matrix()
-sum(coef(rr_cv)^2) - sum(coef(rr_cv, s = "lambda.min")^2)
-rr_cv$cvm[rr_cv$index[2]] - rr_cv$cvm[rr_cv$index[1]]
-
-```
-
-```{r}
-library(glmnet)
-reg <- lm(FATAL ~ ., data = new.data) 
-fit <- glmnet(x, y, family = "binomial", alpha = 1)
-
-x <- model.matrix(reg)
-dim(x)
-```
-
-
-
-
-
-# KNN Classification
-
-```{r}
-library(tidymodels)
-data_split <- initial_split(new.data, prop = 2/3)
-data_train <- training(data_split)
-data_test <- testing(data_split)
-```
-
-```{r}
-cl = data_train$FATAL  # Our training set y
-knn(data_train, data_test, cl, k = 10) #same as before
-knn(train, test, cl, k = 3) # different than before
-```
-
-```{r}
-
-knnPredict <- predict(knnFit,newdata = DC_Test )
-#Get the confusion matrix to see accuracy value and other parameter values
-confusionMatrix(knnPredict, DC_Test$FATAL )
-```
-
-
-```{r}
-#Data Spilt for random trees 
 set.seed(1234)
-
-data_split <- initial_split(new.data, prop = 0.7)
-
-DC_Train <- training(data_split)
-DC_Test <- testing(data_split)
-
+data_split <- initial_split(new_analysis, prop = 0.6)
+cases.training <- training(data_split)
+cases.test <- testing(data_split)
 ```
 
 ```{r}
 #Tree Classification
-tree <- rpart(FATAL ~., data = DC_Train)
-rpart.plot(tree)
-
-#Not sure how to make this bigger
+tree <- rpart::rpart(as.factor(FATAL) ~ .,data = new_analysis)
+rpart.plot::rpart.plot(tree,type=4,
+extra=101, 
+box.palette="GnBu",
+branch.lty=3, 
+shadow.col="gray", 
+nn=TRUE,cex = .5)
 ```
 
+
 ```{r}
-printcp(tree)
-
 #Classification tree:
-rpart(formula = FATAL ~ ., data = DC_Train)
-
+rpart(formula = FATAL ~ ., data = cases.training)
 plotcp(tree)
-
 ```
 
 ```{r}
 #Model selction using the minimum CP 
-tree <- rpart(FATAL ~., data = DC_Train,cp=0.010000)
+tree <- rpart(FATAL ~., data = cases.training,cp=0.010000)
+
+pred_class <- predict(tree, cases.test, type = 'class')
+
+conf_matrix<-confusionMatrix (pred_class, cases.test$FATAL, positive = 'Y')
 ```
 
 ```{r}
-#Model Accuray 
-p <- predict(tree, DC_Test, type = 'class')
-confusionMatrix (p, DC_Test$FATAL, positive = 'Y')
+randomforest <- randomForest(FATAL ~., data = cases.training,cp=0.010000)
+var_importance <- importance(randomforest)
+plot(var_importance)
 ```
 
-# Street Lights and Cases
+```{r}
+residuals <- residuals(tree)
+plot(residuals)
+```
 
+```{r}
+draw_confusion_matrix <- function(cm) {
+
+  total <- sum(cm$table)
+  res <- as.numeric(cm$table)
+
+  # Generate color gradients. Palettes come from RColorBrewer.
+  greenPalette <- c("#F7FCF5","#E5F5E0","#C7E9C0","#A1D99B","#74C476","#41AB5D","#238B45","#006D2C","#00441B")
+  redPalette <- c("#FFF5F0","#FEE0D2","#FCBBA1","#FC9272","#FB6A4A","#EF3B2C","#CB181D","#A50F15","#67000D")
+  getColor <- function (greenOrRed = "green", amount = 0) {
+    if (amount == 0)
+      return("#FFFFFF")
+    palette <- greenPalette
+    if (greenOrRed == "red")
+      palette <- redPalette
+    colorRampPalette(palette)(100)[10 + ceiling(90 * amount / total)]
+  }
+
+  # set the basic layout
+  layout(matrix(c(1,1,2)))
+  par(mar=c(2,2,2,2))
+  plot(c(100, 345), c(300, 450), type = "n", xlab="", ylab="", xaxt='n', yaxt='n')
+  title('CONFUSION MATRIX', cex.main=2)
+
+  # create the matrix 
+  classes = colnames(cm$table)
+  rect(150, 430, 240, 370, col=getColor("green", res[1]))
+  text(195, 435, classes[1], cex=1.2)
+  rect(250, 430, 340, 370, col=getColor("red", res[3]))
+  text(295, 435, classes[2], cex=1.2)
+  text(125, 370, 'Predicted', cex=1.3, srt=90, font=2)
+  text(245, 450, 'Actual', cex=1.3, font=2)
+  rect(150, 305, 240, 365, col=getColor("red", res[2]))
+  rect(250, 305, 340, 365, col=getColor("green", res[4]))
+  text(140, 400, classes[1], cex=1.2, srt=90)
+  text(140, 335, classes[2], cex=1.2, srt=90)
+
+  # add in the cm results
+  text(195, 400, res[1], cex=1.6, font=2, col='white')
+  text(195, 335, res[2], cex=1.6, font=2, col='white')
+  text(295, 400, res[3], cex=1.6, font=2, col='white')
+  text(295, 335, res[4], cex=1.6, font=2, col='white')
+
+  # add in the specifics 
+  plot(c(100, 0), c(100, 0), type = "n", xlab="", ylab="", main = "DETAILS", xaxt='n', yaxt='n')
+  text(10, 85, names(cm$byClass[1]), cex=1.2, font=2)
+  text(10, 70, round(as.numeric(cm$byClass[1]), 3), cex=1.2)
+  text(30, 85, names(cm$byClass[2]), cex=1.2, font=2)
+  text(30, 70, round(as.numeric(cm$byClass[2]), 3), cex=1.2)
+  text(50, 85, names(cm$byClass[5]), cex=1.2, font=2)
+  text(50, 70, round(as.numeric(cm$byClass[5]), 3), cex=1.2)
+  text(70, 85, names(cm$byClass[6]), cex=1.2, font=2)
+  text(70, 70, round(as.numeric(cm$byClass[6]), 3), cex=1.2)
+  text(90, 85, names(cm$byClass[7]), cex=1.2, font=2)
+  text(90, 70, round(as.numeric(cm$byClass[7]), 3), cex=1.2)
+
+  # add in the accuracy information 
+  text(30, 35, names(cm$overall[1]), cex=1.5, font=2)
+  text(30, 20, round(as.numeric(cm$overall[1]), 3), cex=1.4)
+  text(70, 35, names(cm$overall[2]), cex=1.5, font=2)
+  text(70, 20, round(as.numeric(cm$overall[2]), 3), cex=1.4)
+}
+
+draw_confusion_matrix(conf_matrix)
+```
+
+# Analysis - Street Lights and Cases
+## Linear Regression
 ```{r}
 lights.accident<- read_rds("../Data/lights.accident.rds")
 
@@ -291,10 +182,9 @@ ggthemr("fresh")
 
 
 grid.arrange(p1, p2, nrow=2)
-
-
 ```
 
+##Summary Table
 ```{r}
 lights.accident.lm <- lm(actd.cases ~ s.lights, data = lights.accident)
 tidy(summary(lights.accident.lm)) |> 
@@ -304,6 +194,8 @@ tidy(summary(lights.accident.lm)) |>
              zoom = 1.5,
              bs_theme = "Sandstone")
 ```
+
+
 # Plot
 
 ```{r}
@@ -315,4 +207,177 @@ df_dc3 |>
        title = "Distribution of Drivers by Age")+
   theme(plot.title = element_text(hjust = 0.5))
 ```
+
+
+
+
+#Archieve
+## Analysis 
+
+##  (CANNOT USE) Logistic Regression 
+### Full dataset
+
+```{r}
+full.model <- glm(FATAL ~ ., data = dummy, family = "binomial")
+summary(full.model)
+
+# library(car)
+# vif(full.model) ## dealing multicollinearity
+```
+
+### Initial Logit
+```{r}
+logit_init_model <- glm(FATAL ~ TIME_PERIOD + MONTH + SPEEDING_INVOLVED + AGE + WARD, data = new.data, family = "binomial")
+summary(logit_init_model)
+# output table is saved under Output folder
+# output image is at summary table section
+
+vif(logit_init_model) ## passed
+
+
+```
+```{r}
+ggplot(aes(x = SPEEDING_INVOLVED), data = new.data)+
+  geom_bar()
+
+new.data |> 
+  tabyl(SPEEDING_INVOLVED)
+```
+
+
+```{r}
+new.data |> 
+  tabyl(PERSONTYPE)
+
+
+```
+
+
+### Stepwise
+```{r}
+new.data |> 
+  slice_sample(n = 5000) -> sample_data
+# Fit a logistic regression model to your data
+model <- glm(FATAL ~ ., data = dummy, family = "binomial")
+# Perform a stepwise regression
+step_model <- stepAIC(model, direction = "both")
+```
+
+
+```{r}
+# Print the summary of the stepwise model
+summary(step_model)
+```
+
+### Summary Table
+
+
+#### full_model
+```{r}
+full.model
+
+tidy(full.model) |> 
+  mutate(p.value = round(p.value, digits = 5),
+         estimate = round(estimate, digits = 5)) |> 
+  dplyr::arrange(p.value) |> 
+    knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "../Output/logit.init.output.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+```
+
+#### logit_init_model
+```{r}
+tidy(logit_init_model) |> 
+  mutate(p.value = round(p.value, digits = 5),
+         estimate = round(estimate, digits = 5)) |> 
+  dplyr::arrange(p.value) |> 
+    knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "../Output/logit.init.output.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+```
+
+#### step_model
+```{r}
+tidy(step_model) |> 
+  dplyr::arrange(p.value) |> 
+    knitr::kable("latex", booktabs = T) %>%
+  kable_styling() %>%
+  save_kable(file = "../Output/stepwise.output.png",
+             zoom = 1.5,
+             bs_theme = "Sandstone")
+```
+
+##  (NOT USE)Ridge
+```{r}
+library(MASS)
+# include:false
+rr <-  lm.ridge(FATAL ~ ., lambda=seq(0,100,1), data = new.data)
+head(rr$coef, n=6)
+
+broom::tidy(rr)
+plot(rr)
+
+MASS::select(rr)
+
+ggthemr("fresh")
+
+ggplot(broom::tidy(rr), 
+       aes(x = lambda, y = GCV)) +
+  geom_line() +
+  geom_vline(xintercept = broom::tidy(rr)$lambda[which.min(broom::tidy(rr)$GCV)],
+             color = "red", lty = 2)
+
+
+reg <- glm(FATAL ~ ., data = new.data) 
+x <- model.matrix(reg)
+dim(x)
+y <- new.data$FATAL
+
+rr <- glmnet(x, y, alpha = 0)
+
+plot(rr, label = TRUE)
+plot(rr, xvar = "lambda", label = TRUE)
+
+set.seed(123)
+rr_cv <- cv.glmnet(x, y, alpha=0)
+
+plot(rr_cv)
+coef(rr_cv)
+coef(rr_cv, s = "lambda.min") 
+coef(rr_cv) |> as.matrix()
+sum(coef(rr_cv)^2) - sum(coef(rr_cv, s = "lambda.min")^2)
+rr_cv$cvm[rr_cv$index[2]] - rr_cv$cvm[rr_cv$index[1]]
+
+library(glmnet)
+reg <- lm(FATAL ~ ., data = new.data) 
+fit <- glmnet(x, y, family = "binomial", alpha = 1)
+
+x <- model.matrix(reg)
+dim(x)
+```
+
+
+
+
+
+## (NOT USE) KNN Classification
+
+```{r}
+library(tidymodels)
+data_split <- initial_split(new.data, prop = 2/3)
+data_train <- training(data_split)
+data_test <- testing(data_split)
+
+cl = data_train$FATAL  # Our training set y
+knn(data_train, data_test, cl, k = 10) #same as before
+knn(train, test, cl, k = 3) # different than before
+knnPredict <- predict(knnFit,newdata = DC_Test )
+#Get the confusion matrix to see accuracy value and other parameter values
+confusionMatrix(knnPredict, DC_Test$FATAL )
+```
+
 

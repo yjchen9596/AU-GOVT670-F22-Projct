@@ -72,78 +72,85 @@ cases.after2010 <- car_crash |>
   left_join(car_crash_details, by = c("CRIMEID", "CCN")) |> 
    dplyr::select(-c("LOCATIONERROR", "LASTUPDATEDATE","MPDLATITUDE","MPDLONGITUDE","STREETSEGID", "TODATE","EVENTID","MAR_ADDRESS", "ROADWAYSEGID", "MPDGEOX","MPDGEOY")) |> 
   mutate(FROMDATE =  as_datetime(FROMDATE),
-         DATE = as_date(FROMDATE),
          TIME =  hour(FROMDATE),
          MONTH = month(FROMDATE),
          YEAR = year(FROMDATE)) |> 
+  filter(PERSONTYPE == "Pedestrian" |PERSONTYPE ==  "Driver"   |PERSONTYPE ==  "Passenger" |PERSONTYPE == "Bicyclist" ) |> 
   mutate(TIME_PERIOD = case_when( TIME > 6 & TIME < 12 ~ "Morning",
                                   TIME >= 12 & TIME < 17 ~ "Afternoon",
                                   TIME >= 17 & TIME < 21 ~ "Evening",
-                                  TIME >=21 | TIME <= 6 ~ "Night")) |> 
-   dplyr::filter(YEAR > 2010) |> 
-    rename_all(toupper)  |> 
-            filter(PERSONTYPE ==  "Driver" | PERSONTYPE ==  "Passenger" | PERSONTYPE ==  "Pedestrian" | PERSONTYPE == "Bicyclist") |>
-  mutate(
-    # PERSONTYPE =  dplyr::recode(PERSONTYPE, ## dealing multicollinearity
-    #                          "0" = "Unknown",
-    #                          "Occupant o" = "Unknown",
-    #                          "Other" = "Unknown",
-    #                          "Unknown" = "Unknown",
-    #                          "Electric M" = "Driver",
-    #                          "Witness" = "NotApplicable",
-    #                          "Reporting" = "NotApplicable",
-    #                          "Streetcar" = "NotApplicable"),
-                     WARD = as.character(WARD),
-                     PERSONTYPE = as.character(PERSONTYPE),
-         INVEHICLETYPE = dplyr::recode(INVEHICLETYPE, "0" = "Unknown",
-                             "Other Vehicle" = "Other",
-                             "None" = "None",
-                             "Unknown" = "Unknown", "Other Small/light Truck" = "Truck",
-                             "Pickup Truck" = "Truck",
-                             "Large/heavy Truck" = "Truck",
-                             "Suv (sport Utility Vehicle)" = "SUV",
-                              "Passenger Van" = "Van",
-                             "Passenger Car/automobile" = "Car",
-                             "Cargo Van"="Van",
-                             "Motorhome/camper/rv (recreational Vehicle)" = "Van",
-                             "Atv (all Terrain Vehicle)" = "ATV",
-                             "Drugs/ Narcotics"   = "Unknown",
-                             "Firearms" = "Unknown"),
-                     WARD = as.character(WARD),
-                     INVEHICLETYPE = as.character(INVEHICLETYPE),
-         WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD),
-         SPEEDING_INVOLVED = if_else(SPEEDING_INVOLVED == 1, 0, 1),
-                  FATAL = ifelse(FATAL == "Y", 1, 0),
-         TIME = as.double(TIME),
-         PERSONTYPE = as.factor(PERSONTYPE),
+                                  TIME >=21 | TIME <= 6 ~ "Night"),
+                 WARD = if_else(WARD %in% c("Null", "UNKNOWN"), "Unknown", WARD),   
          INVEHICLETYPE = as.factor(INVEHICLETYPE),
-         FATAL = as.factor(FATAL),
-         MONTH = as.factor(MONTH),
-         TIME_PERIOD = as.factor(TIME_PERIOD),
-         SPEEDING_INVOLVED = as.factor(SPEEDING_INVOLVED),
-         WARD = as.factor(WARD)) |> 
-  filter(AGE < 90 & AGE> 0)|> 
-  filter(!(PERSONTYPE == "Driver" & AGE <= 16),WARD != "Unknown") |>   
-  dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, DATE, YEAR, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, LICENSEPLATESTATE,TICKETISSUED,"OBJECTID.X","OBJECTID.Y", FATAL_PEDESTRIAN,MAR_SCORE,FATALPASSENGER,MAJORINJURY, MINORINJURY,FATAL_BICYCLIST,FATAL_DRIVER, SPEEDING)) |> 
-  dplyr::select(-contains("IMPAIRED"), -contains("UNKNOWN"), -contains("INJURIES")) |> 
-  dplyr::select(FATAL, everything())
+        SPEEDING_INVOLVED = if_else(SPEEDING_INVOLVED == 1, 0, 1),
+                SPEEDING_INVOLVED = as.factor(SPEEDING_INVOLVED)) |> 
+        # PERSONTYPE =  dplyr::recode(PERSONTYPE, ## dealing multicollinearity
+        #                      "0" = "Unknown",
+        #                      "Occupant o" = "Unknown",
+        #                      "Other" = "Unknown",
+        #                      "Unknown" = "Unknown",
+        #                      "Electric M" = "Driver",
+        #                      "Witness" = "NotApplicable",
+        #                      "Reporting" = "NotApplicable",
+        #                      "Streetcar" = "NotApplicable")
+      dplyr::select(-contains("IMPAIRED"), -contains("UNKNOWN"), -contains("INJURIES"), -contains("TOTAL")) |> 
+   dplyr::filter(YEAR > 2010) |> 
+  dplyr::select(-c(PERSONID,MAR_ID, NEARESTINTSTREETNAME, NEARESTINTROUTEID, YCOORD, XCOORD, LONGITUDE,LATITUDE, ADDRESS, FROMDATE, REPORTDATE, X, Y, CCN,  MEASURE,OFFSET,VEHICLEID, YEAR, CRIMEID, ROUTEID, INTAPPROACHDIRECTION, LICENSEPLATESTATE,TICKETISSUED, FATAL_PEDESTRIAN,MAR_SCORE,FATALPASSENGER,MAJORINJURY, MINORINJURY,FATAL_BICYCLIST,FATAL_DRIVER, TIME,OFFINTERSECTION,INVEHICLETYPE,OBJECTID.y, OBJECTID.x,SPEEDING)) |> 
+  mutate( FATAL = as.factor(FATAL),
+        WARD = as.factor(WARD),
+        PERSONTYPE = as.factor(PERSONTYPE),
+        MONTH = as.factor(MONTH),
+        TIME_PERIOD = as.factor(TIME_PERIOD),
+        SPEEDING_INVOLVED = as.factor(SPEEDING_INVOLVED)) |> 
+  filter(AGE < 90)|> 
+  filter(!(PERSONTYPE == "Driver" & AGE <= 15)) |> 
+           filter(WARD != "Unknown") |> 
+  dplyr::select(FATAL, everything()) |> 
+      drop_na()-> cases.after2010
 
-  
-# colnames(cases.after2010)
-unique(cases.after2010$FATAL)
-  # unique(cases.after2010$PERSONTYPE)
 
-### dealing overwhelmingly unequal distribution
-# Divide the data based on the 'group' column
-# cases.after2010 <- cases.after2010 %>%
-#   group_by(SPEEDING_INVOLVED) %>%
-#   sample_n(size=5865)
+cases.after2010 |> 
+  tabyl(FATAL)
 
-## NOT WORTH TO USE IT AT ALL
- # PERSONTYPE    n   percent
- #     Driver 9810 0.8363171
- #  NonDriver 1920 0.1636829
-write_rds(cases.after2010, file = "cases.after2010.rds", compress = "gz") ## rds file size is smaller
+new_analysis <- cases.after2010 %>%
+  group_by(FATAL) %>%
+  sample_n(size=393)
+
+new_analysis |> 
+  tabyl(FATAL)
+
+write_rds(new_analysis, file = "new_analysis.rds", compress = "gz") ## rds file size is smaller
+```
+
+
+```{r}
+new.data<- read_rds("cases.after2010.rds")
+
+new.data |> 
+mutate( FATAL = as.factor(FATAL),
+        WARD = as.factor(WARD),
+        PERSONTYPE = as.factor(PERSONTYPE),
+        MONTH = as.factor(MONTH),
+        TIME_PERIOD = as.factor(TIME_PERIOD),
+        SPEEDING_INVOLVED = as.factor(SPEEDING_INVOLVED)) |> 
+  filter(AGE < 90)|> 
+  filter(!(PERSONTYPE == "Driver" & AGE <= 15)) |> 
+           filter(WARD != "Unknown") |> 
+    filter(PERSONTYPE != "Unknown" & PERSONTYPE !="NotApplicable") |> 
+  dplyr::select(FATAL, everything()) |> 
+  drop_na() -> nnnnnnn
+
+unique(nnnnnnn$PERSONTYPE)
+
+nnnnnnn |> 
+  tabyl(FATAL)
+cc <- nnnnnnn %>%
+  group_by(FATAL) %>%
+  sample_n(size=393)
+
+# write_rds(nnnnnnn, file = "nnnnnnn.rds", compress = "gz") ## rds file size is smaller
+
+
 ```
 
 ```{r}
