@@ -20,13 +20,13 @@ Written Report:
 ----
 Author: 
 
-<br \>
+<br />
 YouJia Chen, MS in Data Science.
-<br \>
+<br />
 Concillia Hleziphi Mpofu, MS in Data Science.
-<br \>
+<br />
 School of Public Affairs
-<br \>
+<br />
 American University
 
 
