@@ -1,5 +1,17 @@
 # Review-of-Fatal-Traffic-Accidents-in-DC.
-Collaborated Work for Project for GOVT670- Introduction of Political Data Science: Car Crash in DC Analysis
+Collaborated statistical analysis for Car Crash in DC.
+
+
+Data 
+
+
+|Data Name|Attributes|Records|
+|---------|----------|-------|
+|Car Crashes|58|273498|
+|Car Crashes Details|15|721264|
+|Street Lights|53|71,721 |
+
+
 
 
 Author: 
@@ -11,6 +23,7 @@ Concillia Hleziphi Mpofu, MS in Data Science.
 School of Public Affairs
 
 American University
+
 
 
 
