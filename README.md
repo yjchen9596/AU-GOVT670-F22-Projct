@@ -28,7 +28,7 @@ American University
 
 Written Report:
 
-[![LinkedIn](https://custom-icon-badges.demolab.com/badge/-Get%20Paper%20Here-blue?style=for-the-badge&logo=paste&logoColor=white)](https://docs.google.com/document/d/1Gncx452fJkDS8yUaoszYlJGWfDC7kq39CmPoOs4TGtg/edit?usp=sharing)
+[![LinkedIn](https://custom-icon-badges.demolab.com/badge/-Downlaod-blue?style=for-the-badge&logo=paste&logoColor=white)](https://docs.google.com/document/d/1Gncx452fJkDS8yUaoszYlJGWfDC7kq39CmPoOs4TGtg/export?format=pdf)
 
 
 
