@@ -35,6 +35,7 @@ M.S. in Data Science
 
 <br />
 School of Public Affairs
+<br />
 American University
 
 
