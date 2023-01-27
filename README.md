@@ -13,9 +13,9 @@ Data Overview:
 
 Methods:
 
-1. Logistic Regression <a href="https://icons8.com/icon/2FwzUXoNII3U/linear-regression">Linear Regression icon by Icons8</a>
+1. Logistic Regression 
 2. Decision Tree 🌳
-3. Linear Regression <a href="https://icons8.com/icon/hK1U14gi40tq/linear-regression">Linear Regression icon by Icons8</a>
+3. Linear Regression 
 
 
 ## Written Report:
