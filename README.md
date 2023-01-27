@@ -13,22 +13,21 @@ Data
 
 
 
-
-Author: 
-
-YouJia Chen, MS in Data Science.
-
-Concillia Hleziphi Mpofu, MS in Data Science.
-
-School of Public Affairs
-
-American University
-
-
-
 Written Report:
 
 [![LinkedIn](https://custom-icon-badges.demolab.com/badge/-Downlaod-blue?style=for-the-badge&logo=paste&logoColor=white)](https://docs.google.com/document/d/1Gncx452fJkDS8yUaoszYlJGWfDC7kq39CmPoOs4TGtg/export?format=pdf)
+
+----
+Author: 
+
+<br \>
+YouJia Chen, MS in Data Science.
+<br \>
+Concillia Hleziphi Mpofu, MS in Data Science.
+<br \>
+School of Public Affairs
+<br \>
+American University
 
 
 
