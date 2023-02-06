@@ -13,9 +13,9 @@ Data Overview:
 
 Methods:
 
-1. Logistic Regression 
-2. Decision Tree 🌳
-3. Linear Regression 
+1. Decision Tree 🌳
+2. Logistic Regression 📈
+4. Linear Regression 📉
 
 
 ## Written Report:
@@ -30,7 +30,10 @@ Methods:
 ![reportsnapshot](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/trees.png?raw=true)
 
 ### Logistic Regression
-![logitregression](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/sum.table.png?raw=true)
+![logitregression](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/logit.summary.png?raw=true)
+
+### Linear Regression
+![linearregression](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/tidy.logit..png?raw=true)
 
 ## Authers: 
 
