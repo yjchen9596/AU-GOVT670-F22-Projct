@@ -1,4 +1,4 @@
-# Review-of-Fatal-Traffic-Accidents-in-DC.
+# Review of Fatal Traffic Accidents in DC.
 Collaborated statistical analysis for Car Crash in DC.
 
 -----
