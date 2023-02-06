@@ -23,21 +23,6 @@ Methods:
 [![LinkedIn](https://custom-icon-badges.demolab.com/badge/-Downlaod-blue?style=for-the-badge&logo=paste&logoColor=white)](https://docs.google.com/document/d/1Gncx452fJkDS8yUaoszYlJGWfDC7kq39CmPoOs4TGtg/export?format=pdf)
 
 ----
-## Author: 
-
-<br />
-
-### YouJia Chen,
-M.S. in Data Science
-
-### Concillia Hleziphi Mpofu, 
-M.S. in Data Science
-
-<br />
-School of Public Affairs
-<br />
-American University
-
 
 
 ## Authers: 
