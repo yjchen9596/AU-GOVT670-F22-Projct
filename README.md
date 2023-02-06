@@ -20,9 +20,12 @@ Methods:
 
 ## Written Report:
 
-[![LinkedIn](https://custom-icon-badges.demolab.com/badge/-Downlaod-blue?style=for-the-badge&logo=paste&logoColor=white)](https://docs.google.com/document/d/1Gncx452fJkDS8yUaoszYlJGWfDC7kq39CmPoOs4TGtg/export?format=pdf)
+[![download](https://custom-icon-badges.demolab.com/badge/-Downlaod-blue?style=for-the-badge&logo=paste&logoColor=white)](https://docs.google.com/document/d/1Gncx452fJkDS8yUaoszYlJGWfDC7kq39CmPoOs4TGtg/export?format=pdf)
 
 ----
+
+## Snapshot of Report
+![reportsnapshot](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/trees.png?raw=true)
 
 
 ## Authers: 
