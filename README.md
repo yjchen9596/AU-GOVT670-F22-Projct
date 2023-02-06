@@ -40,3 +40,23 @@ American University
 
 
 
+## Authers: 
+
+<br />
+School of Public Affairs
+<br />
+American University
+
+#### Yuka Chen <br />
+#### M.S. in Data Science <br />
+
+[![EmailYC](https://custom-icon-badges.demolab.com/badge/-Email%20Yuka-teal?style=for-the-badge&logo=mail&logoColor=white)](mailto:yjchen9596@gmail.com?subject=Contact%20from%20GitHub&body=Hi%20Yuka,%0A%0AI%20am%20reaching%20out%20because%20.%20.%20.) <br />
+[![GitHubYC](https://custom-icon-badges.demolab.com/badge/-Yuka's%20GitHub-purple?style=for-the-badge&logo=mark-github&logoColor=white)](https://github.com/yjchen9596)
+
+
+#### Concillia Hleziphi Mpofu, 
+#### M.S. in Data Science
+
+[![EmailYC](https://custom-icon-badges.demolab.com/badge/-Email%20Connie-teal?style=for-the-badge&logo=mail&logoColor=white)](mailto:cm0789a@american.edu?subject=Contact%20from%20GitHub&body=Hi%20Yuka,%0A%0AI%20am%20reaching%20out%20because%20.%20.%20.) <br />
+[![GitHubYC](https://custom-icon-badges.demolab.com/badge/-Connie's%20GitHub-purple?style=for-the-badge&logo=mark-github&logoColor=white)](https://github.com/ConcilliaHlezi)
+
