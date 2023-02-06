@@ -25,8 +25,12 @@ Methods:
 ----
 
 ## Snapshot of Report
+
+### Decistion Trees
 ![reportsnapshot](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/trees.png?raw=true)
 
+### Logistic Regression
+![logitregression](https://github.com/yjchen9596/Review-of-Fatal-Traffic-Accidents-in-DC/blob/main/Output/sum.table.png?raw=true)
 
 ## Authers: 
 
